@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Header Inspector Results - PenTest Assistant</title>
+    <link rel="icon" type="image/svg+xml" href="../icons/favicon.svg">
     <link rel="stylesheet" href="../styles/results.css">
 </head>
 <body>
@@ -11,9 +12,25 @@
         <header class="page-header">
             <div class="header-content">
                 <h1>📋 Header Inspector Results</h1>
-                <button id="copyAllBtn" class="copy-btn" tabindex="0" aria-label="Copy all results to clipboard">
-                    📋 Copy All Results
-                </button>
+                <div class="header-controls">
+                    <button id="themeToggle" class="theme-toggle-btn" title="Toggle Light/Dark Mode" aria-label="Toggle theme">
+                        🌙
+                    </button>
+                    <button id="copyAllBtn" class="copy-btn" tabindex="0" aria-label="Copy all results to clipboard">
+                        📋 Copy All Results
+                    </button>
+                    <div class="export-group">
+                        <button id="exportJSONBtn" class="export-btn secondary" tabindex="0" aria-label="Export as JSON">
+                            📄 Export JSON
+                        </button>
+                        <button id="exportCSVBtn" class="export-btn secondary" tabindex="0" aria-label="Export as CSV">
+                            📊 Export CSV
+                        </button>
+                        <button id="exportXMLBtn" class="export-btn secondary" tabindex="0" aria-label="Export as XML">
+                            🗂️ Export XML
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="url-info">
                 <span class="label">Analyzed URL:</span>
@@ -156,7 +173,7 @@
 
         <footer class="page-footer">
             <div class="footer-content">
-                <span>PenTest Assistant v1.0.0</span>
+                <span>PenTest Assistant v1.5.0</span>
                 <span id="exportTime"></span>
             </div>
         </footer>

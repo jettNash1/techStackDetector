@@ -17,7 +17,64 @@ let currentData = null;
 let tabId = null;
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', initializePage);
+// Theme detection and application - Default to Dark Mode
+async function initializeTheme() {
+    try {
+        const result = await chrome.storage.local.get(['theme']);
+        const savedTheme = result.theme;
+        let theme = savedTheme;
+        if (!theme) {
+            // Default to dark mode
+            theme = 'dark';
+        }
+        applyTheme(theme);
+        updateThemeToggleIcon(theme);
+    } catch (error) {
+        console.error('Failed to initialize theme:', error);
+        applyTheme('dark');
+        updateThemeToggleIcon('dark');
+    }
+}
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+async function toggleTheme() {
+    try {
+        const isDark = document.body.classList.contains('dark-mode');
+        const newTheme = isDark ? 'light' : 'dark';
+        
+        // Save preference
+        await chrome.storage.local.set({ theme: newTheme });
+        
+        // Apply theme
+        applyTheme(newTheme);
+        updateThemeToggleIcon(newTheme);
+        
+    } catch (error) {
+        console.error('Failed to toggle theme:', error);
+    }
+}
+
+function updateThemeToggleIcon(theme) {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggle.title = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeTheme();
+    initializePage();
+});
 
 async function initializePage() {
     try {
@@ -455,14 +512,41 @@ function setupEventListeners() {
         });
     });
     
+    // Export buttons
+    const exportJSONBtn = document.getElementById('exportJSONBtn');
+    const exportCSVBtn = document.getElementById('exportCSVBtn');
+    const exportXMLBtn = document.getElementById('exportXMLBtn');
+    
+    if (exportJSONBtn) {
+        exportJSONBtn.addEventListener('click', exportAsJSON);
+    }
+    if (exportCSVBtn) {
+        exportCSVBtn.addEventListener('click', exportAsCSV);
+    }
+    if (exportXMLBtn) {
+        exportXMLBtn.addEventListener('click', exportAsXML);
+    }
+    
     // Retry analysis button
     const retryBtn = document.querySelector('.retry-btn');
     if (retryBtn) {
         retryBtn.addEventListener('click', retryAnalysis);
     }
     
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    }
+    
     // Keyboard support
-    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn').forEach(btn => {
+    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn, .export-btn, .theme-toggle-btn').forEach(btn => {
         btn.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -727,6 +811,248 @@ function showError(message) {
     resultsContainer.style.display = 'none';
     errorContainer.style.display = 'flex';
     errorMessage.textContent = message;
+}
+
+// Advanced Export Functions
+async function exportAsJSON() {
+    if (!currentData) return;
+    
+    try {
+        const exportData = {
+            metadata: {
+                tool: 'PenTest Assistant - Certificate Analyzer',
+                version: '1.5.0',
+                analysisType: 'certificate',
+                url: currentData.originalUrl,
+                timestamp: new Date(currentData.data.analyzedAt || currentData.timestamp).toISOString(),
+                exportedAt: new Date().toISOString()
+            },
+            analysis: {
+                certificateInfo: currentData.data.certificateInfo || {},
+                certificateStatus: currentData.data.certificateStatus || {},
+                hstsInfo: currentData.data.hstsInfo || {},
+                burpRecommendations: currentData.data.burpRecommendations || {},
+                owaspMapping: currentData.data.owaspMapping || {},
+                cvssScoring: currentData.data.cvssScoring || {}
+            }
+        };
+        
+        const jsonString = JSON.stringify(exportData, null, 2);
+        downloadFile(jsonString, `certificate-analysis-${formatDateForFilename()}.json`, 'application/json');
+        showCopyNotification('JSON export downloaded successfully!');
+    } catch (error) {
+        console.error('JSON export failed:', error);
+        showCopyNotification('JSON export failed');
+    }
+}
+
+async function exportAsCSV() {
+    if (!currentData) return;
+    
+    try {
+        let csvContent = 'Category,Item,Value,Status,Risk Level,Description\n';
+        
+        // Certificate Status
+        if (currentData.data.certificateStatus) {
+            Object.entries(currentData.data.certificateStatus).forEach(([key, value]) => {
+                if (key !== 'valid' && value !== undefined && value !== null) {
+                    const status = value ? 'Present' : 'Missing';
+                    const risk = getRiskLevelForCertificate(key, value);
+                    csvContent += `"Certificate Status","${escapeCSV(formatCertificateField(key))}","${escapeCSV(String(value))}","${status}","${risk}","${escapeCSV(getCertificateDescription(key))}"\n`;
+                }
+            });
+        }
+        
+        // Certificate Information
+        if (currentData.data.certificateInfo) {
+            Object.entries(currentData.data.certificateInfo).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    csvContent += `"Certificate Info","${escapeCSV(formatCertificateField(key))}","${escapeCSV(String(value))}","Info","Low","${escapeCSV(getCertificateDescription(key))}"\n`;
+                }
+            });
+        }
+        
+        // HSTS Information
+        if (currentData.data.hstsInfo) {
+            Object.entries(currentData.data.hstsInfo).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    const risk = key.includes('missing') ? 'Medium' : 'Low';
+                    csvContent += `"HSTS Configuration","${escapeCSV(formatCertificateField(key))}","${escapeCSV(String(value))}","Info","${risk}","${escapeCSV(getHSTSDescription(key))}"\n`;
+                }
+            });
+        }
+        
+        // Burp Recommendations
+        if (currentData.data.burpRecommendations) {
+            ['highPriority', 'mediumPriority', 'lowPriority'].forEach(priority => {
+                const items = currentData.data.burpRecommendations[priority] || [];
+                items.forEach(item => {
+                    if (item && typeof item === 'object') {
+                        csvContent += `"Burp Recommendations","${escapeCSV(item.category || 'Unknown')}","${escapeCSV(item.description || '')}","${priority.replace('Priority', '')}","${escapeCSV(item.risk || '')}","${escapeCSV(item.burpTechnique || '')}"\n`;
+                    }
+                });
+            });
+        }
+        
+        downloadFile(csvContent, `certificate-analysis-${formatDateForFilename()}.csv`, 'text/csv');
+        showCopyNotification('CSV export downloaded successfully!');
+    } catch (error) {
+        console.error('CSV export failed:', error);
+        showCopyNotification('CSV export failed');
+    }
+}
+
+async function exportAsXML() {
+    if (!currentData) return;
+    
+    try {
+        let xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+        xmlContent += `<pentest-analysis tool="PenTest Assistant" version="1.5.0" type="certificate">\n`;
+        xmlContent += `  <metadata>\n`;
+        xmlContent += `    <url>${escapeXML(currentData.originalUrl)}</url>\n`;
+        xmlContent += `    <timestamp>${new Date(currentData.data.analyzedAt || currentData.timestamp).toISOString()}</timestamp>\n`;
+        xmlContent += `    <exportedAt>${new Date().toISOString()}</exportedAt>\n`;
+        xmlContent += `  </metadata>\n`;
+        
+        xmlContent += `  <analysis>\n`;
+        
+        // Certificate Status
+        if (currentData.data.certificateStatus) {
+            xmlContent += `    <certificateStatus>\n`;
+            Object.entries(currentData.data.certificateStatus).forEach(([key, value]) => {
+                if (key !== 'valid' && value !== undefined && value !== null) {
+                    xmlContent += `      <status name="${escapeXML(key)}" value="${escapeXML(String(value))}">\n`;
+                    xmlContent += `        <description>${escapeXML(getCertificateDescription(key))}</description>\n`;
+                    xmlContent += `      </status>\n`;
+                }
+            });
+            xmlContent += `    </certificateStatus>\n`;
+        }
+        
+        // Certificate Information
+        if (currentData.data.certificateInfo) {
+            xmlContent += `    <certificateInfo>\n`;
+            Object.entries(currentData.data.certificateInfo).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    xmlContent += `      <info name="${escapeXML(key)}">${escapeXML(String(value))}</info>\n`;
+                }
+            });
+            xmlContent += `    </certificateInfo>\n`;
+        }
+        
+        // HSTS Information
+        if (currentData.data.hstsInfo) {
+            xmlContent += `    <hstsInfo>\n`;
+            Object.entries(currentData.data.hstsInfo).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    xmlContent += `      <hsts name="${escapeXML(key)}">${escapeXML(String(value))}</hsts>\n`;
+                }
+            });
+            xmlContent += `    </hstsInfo>\n`;
+        }
+        
+        xmlContent += `  </analysis>\n`;
+        xmlContent += `</pentest-analysis>`;
+        
+        downloadFile(xmlContent, `certificate-analysis-${formatDateForFilename()}.xml`, 'application/xml');
+        showCopyNotification('XML export downloaded successfully!');
+    } catch (error) {
+        console.error('XML export failed:', error);
+        showCopyNotification('XML export failed');
+    }
+}
+
+// Export utility functions
+function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function formatDateForFilename() {
+    return new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+}
+
+function escapeCSV(str) {
+    if (typeof str !== 'string') str = String(str);
+    return str.replace(/"/g, '""');
+}
+
+function escapeXML(str) {
+    if (typeof str !== 'string') str = String(str);
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getRiskLevelForCertificate(key, value) {
+    const keyLower = String(key).toLowerCase();
+    
+    // High risk conditions
+    if (keyLower.includes('expired') || keyLower.includes('invalid') || 
+        keyLower.includes('self-signed') || (keyLower.includes('valid') && !value)) {
+        return 'High';
+    }
+    // Medium risk conditions
+    if (keyLower.includes('weak') || keyLower.includes('old') || 
+        keyLower.includes('deprecated') || keyLower.includes('expiring')) {
+        return 'Medium';
+    }
+    // Default to low risk
+    return 'Low';
+}
+
+function formatCertificateField(field) {
+    return field.replace(/([A-Z])/g, ' $1')
+                .replace(/^./, str => str.toUpperCase())
+                .trim();
+}
+
+function getCertificateDescription(key) {
+    const descriptions = {
+        'issuer': 'Certificate issuing authority',
+        'subject': 'Certificate subject information',
+        'validFrom': 'Certificate validity start date',
+        'validTo': 'Certificate validity end date',
+        'algorithm': 'Certificate signature algorithm',
+        'keySize': 'Certificate key size',
+        'serialNumber': 'Certificate serial number',
+        'fingerprint': 'Certificate fingerprint',
+        'expired': 'Certificate expiration status',
+        'selfSigned': 'Self-signed certificate indicator',
+        'valid': 'Overall certificate validity'
+    };
+    return descriptions[key] || 'Certificate property';
+}
+
+function getHSTSDescription(key) {
+    const descriptions = {
+        'enabled': 'HSTS header presence',
+        'maxAge': 'HSTS maximum age directive',
+        'includeSubDomains': 'HSTS subdomain inclusion',
+        'preload': 'HSTS preload directive',
+        'missing': 'HSTS header missing indicator'
+    };
+    return descriptions[key] || 'HSTS configuration property';
+}
+
+function showCopyNotification(message = 'Copied to clipboard!') {
+    if (copyNotification) {
+        copyNotification.textContent = message;
+        copyNotification.classList.add('show');
+        setTimeout(() => {
+            copyNotification.classList.remove('show');
+        }, 3000);
+    }
 }
 
 // Utility functions

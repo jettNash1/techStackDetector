@@ -37,6 +37,12 @@ async function handleAnalysisRequest(request) {
                 throw new Error(`Unknown feature: ${feature}`);
         }
         
+        // Add OWASP Top 10 mapping and enhanced scoring
+        if (data.burpRecommendations) {
+            data.owaspMapping = mapToOWASPTop10(data);
+            data.cvssScoring = calculateCVSSScoring(data);
+        }
+        
         return {
             success: true,
             data: data
@@ -1997,6 +2003,331 @@ function generateCertBurpRecommendations(certificateInfo, url) {
     );
     
     return recommendations;
+}
+
+// OWASP Top 10 2021 Mapping and Enhanced Scoring
+function mapToOWASPTop10(data) {
+    const owaspMapping = {
+        'A01:2021': { name: 'Broken Access Control', vulnerabilities: [], severity: 'High' },
+        'A02:2021': { name: 'Cryptographic Failures', vulnerabilities: [], severity: 'High' },
+        'A03:2021': { name: 'Injection', vulnerabilities: [], severity: 'Critical' },
+        'A04:2021': { name: 'Insecure Design', vulnerabilities: [], severity: 'Medium' },
+        'A05:2021': { name: 'Security Misconfiguration', vulnerabilities: [], severity: 'Medium' },
+        'A06:2021': { name: 'Vulnerable and Outdated Components', vulnerabilities: [], severity: 'Medium' },
+        'A07:2021': { name: 'Identification and Authentication Failures', vulnerabilities: [], severity: 'High' },
+        'A08:2021': { name: 'Software and Data Integrity Failures', vulnerabilities: [], severity: 'Medium' },
+        'A09:2021': { name: 'Security Logging and Monitoring Failures', vulnerabilities: [], severity: 'Low' },
+        'A10:2021': { name: 'Server-Side Request Forgery (SSRF)', vulnerabilities: [], severity: 'High' }
+    };
+    
+    // Map Burp recommendations to OWASP categories
+    if (data.burpRecommendations) {
+        const allRecommendations = [
+            ...(data.burpRecommendations.highPriority || []),
+            ...(data.burpRecommendations.mediumPriority || []),
+            ...(data.burpRecommendations.lowPriority || [])
+        ];
+        
+        allRecommendations.forEach(rec => {
+            const category = rec.category?.toLowerCase() || '';
+            
+            // A01: Broken Access Control
+            if (category.includes('access control') || category.includes('authorization') || 
+                category.includes('privilege escalation') || category.includes('idor')) {
+                owaspMapping['A01:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A02: Cryptographic Failures
+            else if (category.includes('ssl') || category.includes('tls') || category.includes('encryption') ||
+                     category.includes('certificate') || category.includes('cryptographic') || 
+                     category.includes('weak cipher')) {
+                owaspMapping['A02:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A03: Injection
+            else if (category.includes('sql injection') || category.includes('xss') || 
+                     category.includes('nosql injection') || category.includes('xxe') ||
+                     category.includes('ssti') || category.includes('command injection') ||
+                     category.includes('ldap injection') || category.includes('code injection')) {
+                owaspMapping['A03:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A04: Insecure Design
+            else if (category.includes('business logic') || category.includes('race condition') ||
+                     category.includes('logic bomb') || category.includes('workflow bypass')) {
+                owaspMapping['A04:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A05: Security Misconfiguration
+            else if (category.includes('misconfiguration') || category.includes('cors') ||
+                     category.includes('clickjacking') || category.includes('security headers') ||
+                     category.includes('csp') || category.includes('frame options') ||
+                     category.includes('information disclosure')) {
+                owaspMapping['A05:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A06: Vulnerable and Outdated Components
+            else if (category.includes('outdated') || category.includes('vulnerable component') ||
+                     category.includes('dependency') || category.includes('third-party')) {
+                owaspMapping['A06:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A07: Identification and Authentication Failures
+            else if (category.includes('authentication') || category.includes('session') ||
+                     category.includes('jwt') || category.includes('oauth') || category.includes('csrf') ||
+                     category.includes('password') || category.includes('multi-factor')) {
+                owaspMapping['A07:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A08: Software and Data Integrity Failures
+            else if (category.includes('deserialization') || category.includes('integrity') ||
+                     category.includes('software update') || category.includes('plugin') ||
+                     category.includes('auto-update')) {
+                owaspMapping['A08:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A09: Security Logging and Monitoring Failures
+            else if (category.includes('logging') || category.includes('monitoring') ||
+                     category.includes('audit') || category.includes('detection')) {
+                owaspMapping['A09:2021'].vulnerabilities.push(rec);
+            }
+            
+            // A10: Server-Side Request Forgery
+            else if (category.includes('ssrf') || category.includes('server-side request') ||
+                     category.includes('url redirection') || category.includes('open redirect')) {
+                owaspMapping['A10:2021'].vulnerabilities.push(rec);
+            }
+        });
+    }
+    
+    // Calculate OWASP compliance score
+    const totalCategories = Object.keys(owaspMapping).length;
+    const categoriesWithVulns = Object.values(owaspMapping).filter(cat => cat.vulnerabilities.length > 0).length;
+    const complianceScore = Math.max(0, ((totalCategories - categoriesWithVulns) / totalCategories) * 100);
+    
+    return {
+        categories: owaspMapping,
+        complianceScore: Math.round(complianceScore),
+        totalVulnerabilities: Object.values(owaspMapping).reduce((sum, cat) => sum + cat.vulnerabilities.length, 0),
+        criticalCategories: Object.entries(owaspMapping)
+            .filter(([key, cat]) => cat.vulnerabilities.length > 0 && cat.severity === 'Critical')
+            .map(([key, cat]) => ({ code: key, name: cat.name, count: cat.vulnerabilities.length })),
+        summary: generateOWASPSummary(owaspMapping)
+    };
+}
+
+function calculateCVSSScoring(data) {
+    const scores = [];
+    
+    if (data.burpRecommendations) {
+        // High Priority vulnerabilities
+        (data.burpRecommendations.highPriority || []).forEach(vuln => {
+            scores.push({
+                vulnerability: vuln.category,
+                cvssScore: calculateIndividualCVSS(vuln, 'HIGH'),
+                severity: 'HIGH',
+                vector: generateCVSSVector(vuln, 'HIGH'),
+                impact: vuln.risk || 'High Impact'
+            });
+        });
+        
+        // Medium Priority vulnerabilities
+        (data.burpRecommendations.mediumPriority || []).forEach(vuln => {
+            scores.push({
+                vulnerability: vuln.category,
+                cvssScore: calculateIndividualCVSS(vuln, 'MEDIUM'),
+                severity: 'MEDIUM',
+                vector: generateCVSSVector(vuln, 'MEDIUM'),
+                impact: vuln.risk || 'Medium Impact'
+            });
+        });
+        
+        // Low Priority vulnerabilities
+        (data.burpRecommendations.lowPriority || []).forEach(vuln => {
+            scores.push({
+                vulnerability: vuln.category,
+                cvssScore: calculateIndividualCVSS(vuln, 'LOW'),
+                severity: 'LOW',
+                vector: generateCVSSVector(vuln, 'LOW'),
+                impact: vuln.risk || 'Low Impact'
+            });
+        });
+    }
+    
+    // Calculate overall CVSS score
+    const avgScore = scores.length > 0 ? 
+        scores.reduce((sum, score) => sum + score.cvssScore, 0) / scores.length : 0;
+    
+    return {
+        overallScore: Math.round(avgScore * 10) / 10,
+        overallSeverity: getCVSSSeverity(avgScore),
+        individualScores: scores,
+        riskRating: generateRiskRating(avgScore, scores.length),
+        recommendations: generateCVSSRecommendations(avgScore, scores)
+    };
+}
+
+function calculateIndividualCVSS(vulnerability, priority) {
+    // Simplified CVSS 3.1 scoring based on vulnerability characteristics
+    let baseScore = 0;
+    
+    const category = vulnerability.category?.toLowerCase() || '';
+    
+    // Base scoring by vulnerability type
+    if (category.includes('sql injection') || category.includes('command injection') || 
+        category.includes('ssti') || category.includes('deserialization')) {
+        baseScore = 9.0; // Critical
+    } else if (category.includes('xss') || category.includes('csrf') || category.includes('xxe')) {
+        baseScore = 7.5; // High
+    } else if (category.includes('access control') || category.includes('authentication')) {
+        baseScore = 8.5; // High
+    } else if (category.includes('information disclosure') || category.includes('misconfiguration')) {
+        baseScore = 5.0; // Medium
+    } else if (category.includes('clickjacking') || category.includes('cors')) {
+        baseScore = 4.0; // Medium
+    } else {
+        // Default scoring by priority
+        switch (priority) {
+            case 'HIGH': baseScore = 7.0; break;
+            case 'MEDIUM': baseScore = 5.0; break;
+            case 'LOW': baseScore = 3.0; break;
+            default: baseScore = 3.0;
+        }
+    }
+    
+    // Adjust based on risk description
+    const risk = vulnerability.risk?.toLowerCase() || '';
+    if (risk.includes('remote code execution') || risk.includes('rce')) {
+        baseScore = Math.min(10.0, baseScore + 1.5);
+    } else if (risk.includes('data breach') || risk.includes('data exfiltration')) {
+        baseScore = Math.min(10.0, baseScore + 1.0);
+    } else if (risk.includes('account takeover')) {
+        baseScore = Math.min(10.0, baseScore + 0.8);
+    }
+    
+    return Math.min(10.0, Math.max(0.0, baseScore));
+}
+
+function generateCVSSVector(vulnerability, priority) {
+    // Simplified CVSS vector generation
+    const category = vulnerability.category?.toLowerCase() || '';
+    
+    let av = 'N'; // Attack Vector: Network
+    let ac = 'L'; // Attack Complexity: Low
+    let pr = 'N'; // Privileges Required: None
+    let ui = 'N'; // User Interaction: None
+    let s = 'U';  // Scope: Unchanged
+    let c = 'H';  // Confidentiality: High
+    let i = 'H';  // Integrity: High
+    let a = 'N';  // Availability: None
+    
+    // Adjust based on vulnerability type
+    if (category.includes('csrf') || category.includes('clickjacking')) {
+        ui = 'R'; // Requires user interaction
+    }
+    
+    if (category.includes('authentication') || category.includes('access control')) {
+        pr = 'L'; // Low privileges required
+    }
+    
+    if (category.includes('information disclosure')) {
+        i = 'L'; // Low integrity impact
+        a = 'N'; // No availability impact
+    }
+    
+    if (category.includes('denial') || category.includes('dos')) {
+        c = 'N'; // No confidentiality impact
+        i = 'N'; // No integrity impact
+        a = 'H'; // High availability impact
+    }
+    
+    return `CVSS:3.1/AV:${av}/AC:${ac}/PR:${pr}/UI:${ui}/S:${s}/C:${c}/I:${i}/A:${a}`;
+}
+
+function getCVSSSeverity(score) {
+    if (score >= 9.0) return 'CRITICAL';
+    if (score >= 7.0) return 'HIGH';
+    if (score >= 4.0) return 'MEDIUM';
+    if (score >= 0.1) return 'LOW';
+    return 'NONE';
+}
+
+function generateRiskRating(avgScore, vulnCount) {
+    let rating = getCVSSSeverity(avgScore);
+    
+    if (vulnCount > 10) {
+        rating += ' (High Volume)';
+    } else if (vulnCount > 5) {
+        rating += ' (Medium Volume)';
+    } else if (vulnCount > 0) {
+        rating += ' (Low Volume)';
+    }
+    
+    return rating;
+}
+
+function generateCVSSRecommendations(avgScore, scores) {
+    const recommendations = [];
+    
+    if (avgScore >= 7.0) {
+        recommendations.push('IMMEDIATE ACTION REQUIRED: Critical/High severity vulnerabilities detected');
+        recommendations.push('Prioritize remediation of vulnerabilities with CVSS scores > 7.0');
+        recommendations.push('Implement emergency patching procedures for critical findings');
+    } else if (avgScore >= 4.0) {
+        recommendations.push('Schedule remediation within next maintenance window');
+        recommendations.push('Review and update security configurations');
+    } else {
+        recommendations.push('Address during regular security review cycle');
+        recommendations.push('Consider as part of security hardening efforts');
+    }
+    
+    const criticalCount = scores.filter(s => s.cvssScore >= 9.0).length;
+    const highCount = scores.filter(s => s.cvssScore >= 7.0 && s.cvssScore < 9.0).length;
+    
+    if (criticalCount > 0) {
+        recommendations.push(`Address ${criticalCount} critical severity vulnerability(s) immediately`);
+    }
+    
+    if (highCount > 0) {
+        recommendations.push(`Plan remediation for ${highCount} high severity vulnerability(s) within 30 days`);
+    }
+    
+    return recommendations;
+}
+
+function generateOWASPSummary(owaspMapping) {
+    const summary = {
+        totalCategories: Object.keys(owaspMapping).length,
+        affectedCategories: 0,
+        topRisks: [],
+        complianceGaps: []
+    };
+    
+    Object.entries(owaspMapping).forEach(([code, category]) => {
+        if (category.vulnerabilities.length > 0) {
+            summary.affectedCategories++;
+            summary.topRisks.push({
+                code,
+                name: category.name,
+                severity: category.severity,
+                count: category.vulnerabilities.length
+            });
+        } else {
+            summary.complianceGaps.push({
+                code,
+                name: category.name,
+                status: 'COMPLIANT'
+            });
+        }
+    });
+    
+    // Sort top risks by severity and count
+    summary.topRisks.sort((a, b) => {
+        const severityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+        return (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0) || b.count - a.count;
+    });
+    
+    return summary;
 }
 
 // Utility functions

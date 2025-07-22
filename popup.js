@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', initializePopup);
 
 async function initializePopup() {
     try {
+        // Initialize theme
+        await initializeTheme();
+        
         // Get current active tab
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         currentTab = tabs[0];
@@ -35,6 +38,18 @@ function setupEventListeners() {
         button.addEventListener('click', handleFeatureClick);
         button.addEventListener('keydown', handleKeyDown);
     });
+    
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    }
 }
 
 function handleKeyDown(event) {
@@ -176,6 +191,79 @@ window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
     showStatus('An unexpected error occurred', 'error');
     setProcessingState(false);
+});
+
+// Theme Management
+async function initializeTheme() {
+    try {
+        // Load saved theme preference
+        const result = await chrome.storage.local.get(['theme']);
+        const savedTheme = result.theme;
+        
+        // Determine theme to use
+        let theme = savedTheme;
+        if (!theme) {
+            // Default to system preference
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        
+        // Apply theme
+        applyTheme(theme);
+        updateThemeToggleIcon(theme);
+        
+    } catch (error) {
+        console.error('Failed to initialize theme:', error);
+    }
+}
+
+async function toggleTheme() {
+    try {
+        const isDark = document.body.classList.contains('dark-mode');
+        const newTheme = isDark ? 'light' : 'dark';
+        
+        // Save preference
+        await chrome.storage.local.set({ theme: newTheme });
+        
+        // Apply theme
+        applyTheme(newTheme);
+        updateThemeToggleIcon(newTheme);
+        
+    } catch (error) {
+        console.error('Failed to toggle theme:', error);
+    }
+}
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+function updateThemeToggleIcon(theme) {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggle.title = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+}
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
+    try {
+        const result = await chrome.storage.local.get(['theme']);
+        if (!result.theme) {
+            // Only auto-switch if user hasn't set a preference
+            const newTheme = e.matches ? 'dark' : 'light';
+            applyTheme(newTheme);
+            updateThemeToggleIcon(newTheme);
+        }
+    } catch (error) {
+        console.error('Failed to handle system theme change:', error);
+    }
 });
 
 // Cleanup when popup is closed

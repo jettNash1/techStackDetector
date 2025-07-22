@@ -93,6 +93,15 @@ Description: React application detected
 ⚙️ Scanner Config: Enable DOM-based vulnerability scanning
 ```
 
+### 🌙 **Enhanced User Experience (NEW!)**
+- **🌙 Dark Mode by Default**: Professional pentesting experience out of the box
+- **⚡ Live Theme Toggle**: Instant switching between light and dark modes on any results page
+- **🎨 Color-Coded Security Status**: Clear visual distinction for missing vs present security headers with green/red borders
+- **♿ Full Accessibility**: Complete keyboard navigation support and ARIA compliance
+- **📱 Responsive Design**: Perfect functionality across all screen sizes and devices
+- **🔄 Cross-Page Theme Sync**: Theme preferences automatically saved and applied across all pages
+- **🎯 Professional UX**: GitHub-inspired dark theme colors for optimal readability
+
 ### 🎓 PortSwigger Web Security Academy Integration (ENHANCED!)
 This extension now incorporates **comprehensive vulnerability detection and testing methodologies** directly from PortSwigger's Web Security Academy, covering **60+ vulnerability categories** and providing **professional-grade exploitation guidance**.
 
@@ -232,6 +241,37 @@ Every analysis now includes a dedicated **"🎯 Burp Suite Attack Vectors"** sec
 - **Clipboard Integration**: All copy operations use the system clipboard
 - **Formatted Output**: Text exports are formatted for easy readability in reports and testing documentation
 
+### 🚀 Advanced Export Formats (NEW!)
+- **📄 JSON Export**: Machine-readable format for tool integration (Burp Suite, OWASP ZAP, custom scripts)
+- **📊 CSV Export**: Spreadsheet-compatible format for analysis and reporting
+- **🗂️ XML Export**: Structured format for enterprise security platforms
+- **🔧 Tool Integration**: Direct import into security testing tools and SIEM platforms
+- **📋 Professional Reports**: Enterprise-grade export formats with metadata and timestamps
+
+### 🎨 Enhanced Dark Mode Theme (REDESIGNED!)
+- **🌙 GitHub-Inspired Professional Theme**: Premium dark mode with superior readability and contrast
+- **👁️ Optimized for Extended Use**: WCAG-compliant contrast ratios reduce eye strain during long testing sessions  
+- **⚙️ Smart Theme Toggle**: Seamless switching between light and dark modes with instant preference saving
+- **💾 Cross-Session Persistence**: Theme choice automatically synced across all browser sessions
+- **🖥️ System Integration**: Intelligent auto-detection of system dark mode preferences
+- **📱 Fully Responsive**: Dark theme optimized and tested across all screen sizes and devices
+- **✨ Professional Polish**: Subtle animations, hover effects, and focus states for premium user experience
+
+### 🎯 OWASP Top 10 Compliance Mapping (NEW!)
+- **📊 OWASP 2021 Integration**: Automatic mapping of vulnerabilities to OWASP Top 10 categories
+- **🔍 Compliance Scoring**: Real-time compliance score calculation (0-100%)
+- **📈 Risk Categorization**: Critical, High, Medium, Low severity classification
+- **📋 Compliance Dashboard**: Visual overview of OWASP category coverage
+- **💼 Enterprise Reporting**: Professional compliance reports for security assessments
+
+### ⚡ Enhanced CVSS Scoring (NEW!)
+- **🎯 CVSS 3.1 Integration**: Industry-standard vulnerability scoring system
+- **📊 Individual Scores**: CVSS score for each detected vulnerability (0.0-10.0)
+- **🔍 Vector Analysis**: Complete CVSS vector strings for detailed analysis
+- **📈 Risk Rating**: Overall risk assessment with volume indicators
+- **⏰ Remediation Timeline**: Priority-based remediation recommendations
+- **🏢 Enterprise Standards**: Professional vulnerability management integration
+
 ### Retry and Error Recovery
 - **Smart Retry Functionality**: Re-analyze the same target URL even after page refresh
 - **URL Persistence**: Original analyzed URL is automatically stored and preserved
@@ -328,7 +368,57 @@ This project is provided for educational and professional security testing purpo
 
 ## 🔄 Version History
 
-### v1.3.0 (Latest) - Comprehensive PortSwigger Methodologies
+### v1.5.0 (Latest) - Professional UX Release
+- **🌙 DARK MODE BY DEFAULT** - Extension now opens in dark mode for professional pentesting experience
+- **⚡ LIVE THEME TOGGLE** - Added theme toggle button to every results page for instant switching
+- **🔄 On-the-Fly Switching** - Toggle between light and dark modes without page refresh
+- **💾 Persistent Preferences** - Theme choice automatically saved and synced across all pages
+- **🎯 Perfect Integration** - Theme toggle seamlessly integrated into header controls
+- **♿ Full Accessibility** - Keyboard navigation support for theme toggle button
+- **📊 Optimized Security Score** - Fixed dark mode readability for security score chart with black text on white center
+- **🎨 Enhanced Color Coding** - Clear green/red borders for present/missing security headers in dark mode
+- **🖼️ Professional Favicon** - Added shield-themed favicon to all results pages for brand consistency
+- **📋 Version Consistency** - Updated all version references to v1.5.0 across the entire extension
+
+### v1.4.3 - Complete Dark Mode Readability Overhaul
+- **🚨 NUCLEAR FIX: Universal Dark Mode** - Comprehensive override for ALL light backgrounds across entire extension
+- **✅ 100% Coverage**: Fixed Burp Suite recommendations, tool tags, technique descriptions, and ALL content areas
+- **🔧 Universal Selectors**: Added catch-all rules to prevent ANY light background from appearing in dark mode
+- **📚 Comprehensive Content**: Fixed recommendation items, attack vectors, testing steps, and all text content
+- **💪 !important Override**: Force-applied dark styling to every possible element with light backgrounds
+- **🎯 Targeted Classes**: Added fixes for bg-, background-, light-, gray-, grey-, white- class patterns
+- **⚡ Complete Solution**: No more white/light text on light backgrounds anywhere in the extension
+
+### v1.4.2 - Critical Dark Mode Text Readability Fix
+- **🚨 CRITICAL FIX: Text Readability** - Fixed white text on light grey backgrounds in header values
+- **✅ Perfect Contrast**: All text values now have dark backgrounds with light text for optimal readability
+- **🔧 Comprehensive Override**: Added `!important` rules to prevent any light background issues
+- **📜 Long Header Support**: Enhanced display for CSP and other long security headers with scrollable containers
+- **⚡ Immediate Impact**: No more eye strain from unreadable text combinations
+
+### v1.4.1 - Enhanced Dark Mode & Readability
+- **🎨 MAJOR DARK MODE OVERHAUL** - Complete redesign with GitHub-inspired professional color scheme
+- **👁️ Superior Readability** - High contrast ratios and carefully selected colors for extended use
+- **🔍 Enhanced Typography** - Improved font weights, sizes, and spacing for better information hierarchy
+- **✨ Professional Interactions** - Smooth hover effects, focus states, and visual feedback
+- **🎯 Accessibility Focused** - WCAG-compliant contrast ratios and keyboard navigation support
+- **💎 GitHub-Inspired Design** - Modern, clean aesthetic that professionals expect
+- **🌟 Visual Polish** - Subtle shadows, gradients, and transitions for premium feel
+
+### v1.4.0 - Enterprise-Grade Professional Features
+- **🚀 MAJOR UPDATE: Advanced Export Formats** - JSON, CSV, XML exports for enterprise tool integration
+- **🎨 Professional Dark Mode Theme** - Complete dark theme with system integration and preference persistence
+- **🎯 OWASP Top 10 2021 Compliance Mapping** - Automatic vulnerability categorization with compliance scoring
+- **⚡ Enhanced CVSS 3.1 Scoring System** - Industry-standard vulnerability scoring with risk ratings
+- **📊 Enterprise Compliance Dashboard** - Professional compliance reporting and risk assessment
+- **🔧 Tool Integration Ready** - Direct export to Burp Suite, OWASP ZAP, SIEM platforms
+- **💼 Professional Reporting** - Enterprise-grade export formats with metadata and timestamps
+- **🎯 Risk-Based Prioritization** - CVSS-based remediation timelines and severity classification
+- **🛡️ Robust Error Handling** - Comprehensive null checks and graceful degradation for all export functions
+- **📱 Mobile-Optimized Exports** - Responsive export controls for all screen sizes
+- **🎨 Automatic Theme Detection** - Smart theme application across all result pages with preference sync
+
+### v1.3.0 - Comprehensive PortSwigger Methodologies
 - **🔥 MASSIVE UPDATE: 60+ Vulnerability Categories** - Complete coverage of PortSwigger Web Security Academy methodologies
 - **🆕 Web LLM Attacks** - Latest PortSwigger topic: Prompt injection, model manipulation, context poisoning
 - **⚡ Advanced CSRF & Clickjacking** - Comprehensive exploitation techniques including JSON CSRF, SameSite bypass, UI redressing

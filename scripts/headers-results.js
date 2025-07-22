@@ -16,7 +16,71 @@ let currentData = null;
 let tabId = null;
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', initializePage);
+// Theme detection and application - Default to Dark Mode
+async function initializeTheme() {
+    try {
+        // Load saved theme preference
+        const result = await chrome.storage.local.get(['theme']);
+        const savedTheme = result.theme;
+        
+        // Determine theme to use - DEFAULT TO DARK MODE
+        let theme = savedTheme;
+        if (!theme) {
+            // Default to dark mode instead of system preference
+            theme = 'dark';
+        }
+        
+        // Apply theme
+        applyTheme(theme);
+        updateThemeToggleIcon(theme);
+        
+    } catch (error) {
+        console.error('Failed to initialize theme:', error);
+        // Fallback to dark mode
+        applyTheme('dark');
+        updateThemeToggleIcon('dark');
+    }
+}
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+async function toggleTheme() {
+    try {
+        const isDark = document.body.classList.contains('dark-mode');
+        const newTheme = isDark ? 'light' : 'dark';
+        
+        // Save preference
+        await chrome.storage.local.set({ theme: newTheme });
+        
+        // Apply theme
+        applyTheme(newTheme);
+        updateThemeToggleIcon(newTheme);
+        
+    } catch (error) {
+        console.error('Failed to toggle theme:', error);
+    }
+}
+
+function updateThemeToggleIcon(theme) {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggle.title = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeTheme();
+    initializePage();
+});
 
 async function initializePage() {
     try {
@@ -586,14 +650,41 @@ function setupEventListeners() {
         });
     });
     
+    // Export buttons
+    const exportJSONBtn = document.getElementById('exportJSONBtn');
+    const exportCSVBtn = document.getElementById('exportCSVBtn');
+    const exportXMLBtn = document.getElementById('exportXMLBtn');
+    
+    if (exportJSONBtn) {
+        exportJSONBtn.addEventListener('click', exportAsJSON);
+    }
+    if (exportCSVBtn) {
+        exportCSVBtn.addEventListener('click', exportAsCSV);
+    }
+    if (exportXMLBtn) {
+        exportXMLBtn.addEventListener('click', exportAsXML);
+    }
+    
     // Retry analysis button
     const retryBtn = document.querySelector('.retry-btn');
     if (retryBtn) {
         retryBtn.addEventListener('click', retryAnalysis);
     }
     
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    }
+    
     // Keyboard support
-    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn').forEach(btn => {
+    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn, .export-btn, .theme-toggle-btn').forEach(btn => {
         btn.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -1019,6 +1110,201 @@ function showError(message) {
     resultsContainer.style.display = 'none';
     errorContainer.style.display = 'flex';
     errorMessage.textContent = message;
+}
+
+// Advanced Export Functions
+async function exportAsJSON() {
+    if (!currentData) return;
+    
+    try {
+        const exportData = {
+            metadata: {
+                tool: 'PenTest Assistant - Header Inspector',
+                version: '1.5.0',
+                analysisType: 'headers',
+                url: currentData.originalUrl,
+                timestamp: new Date(currentData.data.analyzedAt || currentData.timestamp).toISOString(),
+                exportedAt: new Date().toISOString()
+            },
+            analysis: {
+                securityScore: currentData.data.securityHeaders?.securityScore || 0,
+                headers: currentData.data.headers || {},
+                securityHeaders: currentData.data.securityHeaders || {},
+                serverInfo: currentData.data.serverInfo || {},
+                responseInfo: currentData.data.responseInfo || {},
+                cookieAnalysis: currentData.data.cookieAnalysis || {},
+                infoDisclosure: currentData.data.infoDisclosure || [],
+                cachingHeaders: currentData.data.cachingHeaders || {},
+                burpRecommendations: currentData.data.burpRecommendations || {}
+            }
+        };
+        
+        const jsonString = JSON.stringify(exportData, null, 2);
+        downloadFile(jsonString, `headers-analysis-${formatDateForFilename()}.json`, 'application/json');
+        showCopyNotification('JSON export downloaded successfully!');
+    } catch (error) {
+        console.error('JSON export failed:', error);
+        showCopyNotification('JSON export failed');
+    }
+}
+
+async function exportAsCSV() {
+    if (!currentData) return;
+    
+    try {
+        let csvContent = 'Category,Item,Value,Risk Level,Description\n';
+        
+        // Headers
+        Object.entries(currentData.data.headers || {}).forEach(([name, value]) => {
+            csvContent += `"Headers","${escapeCSV(name)}","${escapeCSV(value)}","Info","HTTP Response Header"\n`;
+        });
+        
+        // Security Headers
+        if (currentData.data.securityHeaders?.headers) {
+            Object.entries(currentData.data.securityHeaders.headers).forEach(([name, info]) => {
+                if (info && typeof info === 'object') {
+                    const risk = info.missing ? 'High' : 'Low';
+                    const value = info.missing ? 'Missing' : (info.value || 'Not Set');
+                    csvContent += `"Security Headers","${escapeCSV(name)}","${escapeCSV(value)}","${risk}","${escapeCSV(info.description || '')}"\n`;
+                }
+            });
+        }
+        
+        // Server Information
+        Object.entries(currentData.data.serverInfo || {}).forEach(([key, value]) => {
+            if (value) {
+                csvContent += `"Server Info","${escapeCSV(key)}","${escapeCSV(value)}","Info","Server Configuration"\n`;
+            }
+        });
+        
+        // Cookie Analysis
+        if (currentData.data.cookieAnalysis?.securityIssues) {
+            currentData.data.cookieAnalysis.securityIssues.forEach(issue => {
+                csvContent += `"Cookie Security","Security Issue","${escapeCSV(issue)}","Medium","Cookie Security Concern"\n`;
+            });
+        }
+        
+        // Information Disclosure
+        if (currentData.data.infoDisclosure) {
+            currentData.data.infoDisclosure.forEach(disclosure => {
+                csvContent += `"Information Disclosure","${escapeCSV(disclosure.header)}","${escapeCSV(disclosure.value)}","${disclosure.risk}","${escapeCSV(disclosure.description || '')}"\n`;
+            });
+        }
+        
+        // Burp Recommendations
+        if (currentData.data.burpRecommendations) {
+            ['highPriority', 'mediumPriority', 'lowPriority'].forEach(priority => {
+                const items = currentData.data.burpRecommendations[priority] || [];
+                items.forEach(item => {
+                    csvContent += `"Burp Recommendations","${escapeCSV(item.category)}","${escapeCSV(item.description)}","${priority.replace('Priority', '')}","${escapeCSV(item.burpTechnique || '')}"\n`;
+                });
+            });
+        }
+        
+        downloadFile(csvContent, `headers-analysis-${formatDateForFilename()}.csv`, 'text/csv');
+        showCopyNotification('CSV export downloaded successfully!');
+    } catch (error) {
+        console.error('CSV export failed:', error);
+        showCopyNotification('CSV export failed');
+    }
+}
+
+async function exportAsXML() {
+    if (!currentData) return;
+    
+    try {
+        let xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+        xmlContent += `<pentest-analysis tool="PenTest Assistant" version="1.5.0" type="headers">\n`;
+        xmlContent += `  <metadata>\n`;
+        xmlContent += `    <url>${escapeXML(currentData.originalUrl)}</url>\n`;
+        xmlContent += `    <timestamp>${new Date(currentData.data.analyzedAt || currentData.timestamp).toISOString()}</timestamp>\n`;
+        xmlContent += `    <exportedAt>${new Date().toISOString()}</exportedAt>\n`;
+        xmlContent += `  </metadata>\n`;
+        
+        xmlContent += `  <analysis>\n`;
+        xmlContent += `    <securityScore>${currentData.data.securityHeaders?.securityScore || 0}</securityScore>\n`;
+        
+        // Headers
+        xmlContent += `    <headers>\n`;
+        Object.entries(currentData.data.headers || {}).forEach(([name, value]) => {
+            xmlContent += `      <header name="${escapeXML(name)}">${escapeXML(value)}</header>\n`;
+        });
+        xmlContent += `    </headers>\n`;
+        
+        // Security Headers
+        if (currentData.data.securityHeaders?.headers) {
+            xmlContent += `    <securityHeaders>\n`;
+            Object.entries(currentData.data.securityHeaders.headers).forEach(([name, info]) => {
+                if (info && typeof info === 'object') {
+                    xmlContent += `      <securityHeader name="${escapeXML(name)}" missing="${info.missing || false}">\n`;
+                    xmlContent += `        <value>${escapeXML(info.value || 'Missing')}</value>\n`;
+                    xmlContent += `        <description>${escapeXML(info.description || '')}</description>\n`;
+                    xmlContent += `      </securityHeader>\n`;
+                }
+            });
+            xmlContent += `    </securityHeaders>\n`;
+        }
+        
+        // Server Information
+        xmlContent += `    <serverInfo>\n`;
+        Object.entries(currentData.data.serverInfo || {}).forEach(([key, value]) => {
+            if (value) {
+                xmlContent += `      <${key}>${escapeXML(value)}</${key}>\n`;
+            }
+        });
+        xmlContent += `    </serverInfo>\n`;
+        
+        xmlContent += `  </analysis>\n`;
+        xmlContent += `</pentest-analysis>`;
+        
+        downloadFile(xmlContent, `headers-analysis-${formatDateForFilename()}.xml`, 'application/xml');
+        showCopyNotification('XML export downloaded successfully!');
+    } catch (error) {
+        console.error('XML export failed:', error);
+        showCopyNotification('XML export failed');
+    }
+}
+
+// Export utility functions
+function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function formatDateForFilename() {
+    return new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+}
+
+function escapeCSV(str) {
+    if (typeof str !== 'string') str = String(str);
+    return str.replace(/"/g, '""');
+}
+
+function escapeXML(str) {
+    if (typeof str !== 'string') str = String(str);
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showCopyNotification(message = 'Copied to clipboard!') {
+    if (copyNotification) {
+        copyNotification.textContent = message;
+        copyNotification.classList.add('show');
+        setTimeout(() => {
+            copyNotification.classList.remove('show');
+        }, 3000);
+    }
 }
 
 // Utility functions

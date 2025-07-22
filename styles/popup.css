@@ -23,10 +23,20 @@ body {
 
 /* Header */
 .header {
-    text-align: center;
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title-section {
+    text-align: center;
+    flex: 1;
 }
 
 .header h1 {
@@ -40,6 +50,37 @@ body {
     font-size: 14px;
     opacity: 0.9;
     font-weight: 300;
+}
+
+.header-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.theme-toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
 }
 
 /* Current URL display */
@@ -250,4 +291,122 @@ body {
     .feature-btn:hover {
         border-color: #ffffff;
     }
-} 
+}
+
+/* Enhanced Dark Mode Theme - Improved Readability */
+body.dark-mode {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    color: #e6edf3;
+}
+
+.dark-mode .header {
+    border-bottom: 2px solid #30363d;
+}
+
+.dark-mode .theme-toggle {
+    background: #21262d;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .theme-toggle:hover {
+    background: #30363d;
+    border-color: #484f58;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .current-url {
+    background: #161b22;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .url-label {
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.dark-mode .url-text {
+    color: #58a6ff;
+    font-weight: 500;
+}
+
+.dark-mode .feature-btn {
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .feature-btn:hover {
+    background: #21262d;
+    border-color: #58a6ff;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.dark-mode .feature-btn:active {
+    background: #1c2128;
+    transform: translateY(0);
+}
+
+.dark-mode .btn-icon {
+    filter: brightness(1.2);
+}
+
+.dark-mode .btn-content h3 {
+    color: #f0f6fc;
+    font-weight: 600;
+}
+
+.dark-mode .btn-content p {
+    color: #c9d1d9;
+    font-weight: 400;
+}
+
+.dark-mode .status-message.info {
+    color: #58a6ff;
+    background: rgba(88, 166, 255, 0.1);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.dark-mode .status-message.success {
+    color: #2ea043;
+    background: rgba(46, 160, 67, 0.1);
+    border: 1px solid rgba(46, 160, 67, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.dark-mode .status-message.error {
+    color: #f85149;
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.dark-mode .spinner {
+    border-color: #21262d;
+    border-top-color: #58a6ff;
+}
+
+/* Dark mode responsive adjustments */
+@media (prefers-color-scheme: dark) {
+    body:not(.light-mode) {
+        background: linear-gradient(135deg, #1e1e2e 0%, #262640 100%);
+        color: #e1e1e6;
+    }
+    
+    body:not(.light-mode) .header {
+        border-bottom: 2px solid rgba(225, 225, 230, 0.2);
+    }
+    
+    body:not(.light-mode) .theme-toggle {
+        background: rgba(225, 225, 230, 0.1);
+        color: #e1e1e6;
+        border: 1px solid rgba(225, 225, 230, 0.2);
+    }
+}

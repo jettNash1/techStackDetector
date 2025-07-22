@@ -42,6 +42,45 @@ body {
     margin-bottom: 15px;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.theme-toggle-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-btn:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-btn:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.theme-toggle-btn:active {
+    transform: translateY(0);
+}
+
 .page-header h1 {
     font-size: 28px;
     font-weight: 700;
@@ -73,6 +112,52 @@ body {
 .copy-btn:focus {
     outline: 2px solid #4facfe;
     outline-offset: 2px;
+}
+
+/* Export Controls Styles */
+.export-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.export-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.export-btn:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.export-btn:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.export-btn.secondary {
+    font-size: 11px;
+    padding: 6px 10px;
 }
 
 .url-info {
@@ -997,6 +1082,723 @@ body {
     transform: translateX(0);
 }
 
+/* Enhanced Dark Mode Theme - Improved Readability */
+body.dark-mode {
+    background: #0d1117;
+    color: #e6edf3;
+}
+
+.dark-mode .page-header {
+    background: #161b22;
+    border: 1px solid #30363d;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .page-header h1 {
+    color: #f0f6fc;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Button Improvements */
+.dark-mode .copy-btn {
+    background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+    color: #ffffff;
+    border: 1px solid #2ea043;
+}
+
+.dark-mode .copy-btn:hover {
+    background: linear-gradient(135deg, #2ea043 0%, #37a446 100%);
+    box-shadow: 0 6px 20px rgba(46, 160, 67, 0.4);
+}
+
+/* Dark mode theme toggle button */
+.dark-mode .theme-toggle-btn {
+    background: #21262d;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .theme-toggle-btn:hover {
+    background: #30363d;
+    border-color: #484f58;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .theme-toggle-btn:focus {
+    outline: 2px solid #58a6ff;
+    outline-offset: 2px;
+}
+
+.dark-mode .export-btn {
+    background: #21262d;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .export-btn:hover {
+    background: #30363d;
+    border-color: #484f58;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* URL and Label Improvements */
+.dark-mode .url-info .label {
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.dark-mode .url {
+    color: #58a6ff;
+    background: #0d1117;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #21262d;
+}
+
+/* Section Improvements */
+.dark-mode .section {
+    background: #161b22;
+    border: 1px solid #30363d;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .section h2 {
+    color: #f0f6fc;
+    border-bottom: 2px solid #30363d;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+.dark-mode .section p {
+    color: #c9d1d9;
+    line-height: 1.6;
+}
+
+/* Info Items with Better Contrast */
+.dark-mode .info-item {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .info-item:hover {
+    background: #161b22;
+    border-color: #484f58;
+}
+
+.dark-mode .info-item .label {
+    color: #8b949e;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.dark-mode .info-item .value {
+    color: #e6edf3;
+    background: #21262d !important;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #30363d;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+/* Header Items */
+.dark-mode .header-item {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .header-item:hover {
+    background: #161b22;
+    border-color: #484f58;
+}
+
+.dark-mode .header-name {
+    color: #79c0ff;
+    font-weight: 600;
+}
+
+.dark-mode .header-value {
+    color: #e6edf3;
+    background: #21262d !important;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+/* Technology Items */
+.dark-mode .tech-item {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .tech-item:hover {
+    background: #161b22;
+    border-color: #58a6ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Summary Items */
+.dark-mode .summary-item {
+    background: #161b22;
+    border: 1px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .summary-item:hover {
+    background: #21262d;
+    border-color: #484f58;
+}
+
+.dark-mode .summary-count {
+    color: #58a6ff;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.dark-mode .summary-label {
+    color: #c9d1d9;
+    font-weight: 500;
+}
+
+/* Score Display - Specific targeting for security score chart */
+.dark-mode .score-display {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.dark-mode .score-display .score-value {
+    color: #f0f6fc !important;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Score display chart center - remove white fill */
+.dark-mode .score-display canvas,
+.dark-mode .score-display svg {
+    background: transparent !important;
+}
+
+/* Score display center circle - make transparent */
+.dark-mode .score-display svg circle[fill="white"],
+.dark-mode .score-display svg circle[fill="#ffffff"],
+.dark-mode .score-display svg circle[fill="#fff"],
+.dark-mode .score-display canvas[style*="background: white"],
+.dark-mode .score-display *[style*="background: white"] {
+    fill: transparent !important;
+    background: transparent !important;
+}
+
+/* Score display text elements */
+.dark-mode .score-display .score-text,
+.dark-mode .score-display .score-label,
+.dark-mode .score-display text,
+.dark-mode .score-display #scoreValue {
+    fill: #000000 !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* Specifically target the main score number */
+.dark-mode .score-display span#scoreValue {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Copy Section Buttons */
+.dark-mode .copy-section-btn {
+    background: #21262d;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .copy-section-btn:hover {
+    background: #30363d;
+    border-color: #484f58;
+    transform: translateY(-1px);
+}
+
+/* Notifications */
+.dark-mode .copy-notification {
+    background: #161b22;
+    color: #2ea043;
+    border: 1px solid #238636;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Loading and Error States */
+.dark-mode .loading-container {
+    background: #0d1117;
+    color: #e6edf3;
+}
+
+.dark-mode .error-container {
+    background: #0d1117;
+    color: #e6edf3;
+}
+
+.dark-mode .error-container h2 {
+    color: #f85149;
+}
+
+.dark-mode .retry-btn {
+    background: linear-gradient(135deg, #da3633 0%, #f85149 100%);
+    color: #ffffff;
+    border: 1px solid #f85149;
+}
+
+.dark-mode .retry-btn:hover {
+    background: linear-gradient(135deg, #f85149 0%, #ff6b6b 100%);
+    box-shadow: 0 6px 20px rgba(248, 81, 73, 0.4);
+}
+
+/* Text Value Display Fixes - Critical for Readability */
+.dark-mode .value,
+.dark-mode .header-value,
+.dark-mode .info-value,
+.dark-mode textarea,
+.dark-mode input[type="text"],
+.dark-mode .header-item .value,
+.dark-mode .info-item .value,
+.dark-mode [class*="value"],
+.dark-mode pre,
+.dark-mode code {
+    background: #21262d !important;
+    color: #e6edf3 !important;
+    border: 1px solid #30363d !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    word-break: break-word !important;
+    white-space: pre-wrap !important;
+    line-height: 1.4 !important;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+/* Special handling for long CSP and other security headers */
+.dark-mode .header-item .header-value {
+    max-height: 120px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #484f58 #21262d;
+}
+
+.dark-mode .header-item .header-value::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dark-mode .header-item .header-value::-webkit-scrollbar-track {
+    background: #21262d;
+    border-radius: 4px;
+}
+
+.dark-mode .header-item .header-value::-webkit-scrollbar-thumb {
+    background: #484f58;
+    border-radius: 4px;
+}
+
+.dark-mode .header-item .header-value::-webkit-scrollbar-thumb:hover {
+    background: #6e7681;
+}
+
+/* UNIVERSAL Dark Mode Override - Nuclear Option */
+.dark-mode *:not(.copy-notification):not(.loading-container):not(.error-container) {
+    /* Apply dark theme to EVERYTHING except specific containers */
+    border-color: #30363d !important;
+}
+
+/* Light background overrides - comprehensive list */
+.dark-mode *[style*="background: white"],
+.dark-mode *[style*="background: #fff"],
+.dark-mode *[style*="background: #f"],
+.dark-mode *[style*="background-color: white"],
+.dark-mode *[style*="background-color: #fff"],
+.dark-mode *[style*="background-color: #f"],
+.dark-mode *[style*="background-color: rgb(255"],
+.dark-mode *[style*="background-color: rgb(240"],
+.dark-mode *[style*="background-color: rgb(248"],
+.dark-mode *[style*="background-color: #f0"],
+.dark-mode *[style*="background-color: #f8"],
+.dark-mode *[style*="background-color: #f5"],
+.dark-mode *[style*="background-color: #faf"],
+.dark-mode *[style*="background-color: #fbf"],
+.dark-mode *[style*="background-color: #fcf"],
+.dark-mode *[style*="background: rgba(255"],
+.dark-mode *[style*="background: rgba(240"],
+.dark-mode *[style*="background: rgba(248"],
+.dark-mode .light-bg,
+.dark-mode .white-bg,
+.dark-mode .bg-white,
+.dark-mode .bg-light,
+.dark-mode .bg-gray-100,
+.dark-mode .bg-gray-200,
+.dark-mode .bg-gray-50 {
+    background: #21262d !important;
+    color: #e6edf3 !important;
+}
+
+/* Text content areas that need dark backgrounds */
+.dark-mode p,
+.dark-mode span,
+.dark-mode div:not(.section-header):not(.page-header),
+.dark-mode pre,
+.dark-mode code,
+.dark-mode kbd,
+.dark-mode samp,
+.dark-mode blockquote,
+.dark-mode .content,
+.dark-mode .text-content,
+.dark-mode .description,
+.dark-mode .details,
+.dark-mode .explanation,
+.dark-mode .note,
+.dark-mode .warning,
+.dark-mode .alert {
+    background-color: transparent !important;
+    color: #e6edf3 !important;
+}
+
+/* Specific content that needs dark backgrounds with padding */
+.dark-mode .technique-content,
+.dark-mode .recommendation-text,
+.dark-mode .vulnerability-description,
+.dark-mode .attack-description,
+.dark-mode .testing-instruction,
+.dark-mode .manual-test,
+.dark-mode .scanner-setting,
+.dark-mode .extension-info {
+    background: #21262d !important;
+    color: #e6edf3 !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #30363d !important;
+    margin: 4px 0 !important;
+}
+
+/* Ensure readable text on any remaining light elements */
+.dark-mode *[style*="color: #333"],
+.dark-mode *[style*="color: #000"],
+.dark-mode *[style*="color: black"],
+.dark-mode *[style*="color: #111"],
+.dark-mode *[style*="color: #222"],
+.dark-mode *[style*="color: #444"],
+.dark-mode *[style*="color: #555"],
+.dark-mode *[style*="color: #666"],
+.dark-mode *[style*="color: rgb(0"],
+.dark-mode *[style*="color: rgb(51"],
+.dark-mode .dark-text,
+.dark-mode .text-dark,
+.dark-mode .text-black,
+.dark-mode .text-gray-900,
+.dark-mode .text-gray-800,
+.dark-mode .text-gray-700 {
+    color: #e6edf3 !important;
+}
+
+/* Force all clickable elements to have proper dark styling */
+.dark-mode button,
+.dark-mode .btn,
+.dark-mode .button,
+.dark-mode .clickable,
+.dark-mode .link,
+.dark-mode a:not(.copy-btn):not(.export-btn) {
+    background: #21262d !important;
+    color: #58a6ff !important;
+    border: 1px solid #30363d !important;
+}
+
+/* List items and table cells */
+.dark-mode li,
+.dark-mode td,
+.dark-mode th,
+.dark-mode .list-item,
+.dark-mode .cell {
+    background-color: transparent !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+
+/* Additional catch-all rules for common problem areas */
+.dark-mode .recommendation-item,
+.dark-mode .recommendation-section,
+.dark-mode .attack-vector-item,
+.dark-mode .vulnerability-item,
+.dark-mode .technique-item,
+.dark-mode .manual-testing-item,
+.dark-mode .scanner-config-item,
+.dark-mode .extension-item,
+.dark-mode .setup-instruction,
+.dark-mode .testing-step,
+.dark-mode .security-note,
+.dark-mode .penetration-tip,
+.dark-mode .exploit-detail,
+.dark-mode .payload-example,
+.dark-mode .configuration-detail,
+.dark-mode .methodology-step,
+.dark-mode .assessment-note,
+.dark-mode .finding-detail,
+.dark-mode .weakness-description,
+.dark-mode .impact-analysis,
+.dark-mode .remediation-step,
+.dark-mode .verification-method {
+    background: #161b22 !important;
+    color: #e6edf3 !important;
+    border: 1px solid #30363d !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    margin: 4px 0 !important;
+}
+
+/* Target any remaining grey/light backgrounds */
+.dark-mode *[class*="bg-"],
+.dark-mode *[class*="background"],
+.dark-mode *[class*="light"],
+.dark-mode *[class*="gray"],
+.dark-mode *[class*="grey"],
+.dark-mode *[class*="white"] {
+    background: #161b22 !important;
+    color: #e6edf3 !important;
+}
+
+/* Ensure proper contrast for all text elements */
+.dark-mode strong,
+.dark-mode b,
+.dark-mode em,
+.dark-mode i,
+.dark-mode mark,
+.dark-mode small,
+.dark-mode sub,
+.dark-mode sup,
+.dark-mode .text,
+.dark-mode .content-text {
+    color: #e6edf3 !important;
+    background-color: transparent !important;
+}
+
+/* COMPREHENSIVE Dark Mode Content Fix - ALL Backgrounds */
+.dark-mode .burp-recommendations,
+.dark-mode .burp-recommendations *,
+.dark-mode .recommendations,
+.dark-mode .recommendations *,
+.dark-mode .priority-section,
+.dark-mode .priority-section *,
+.dark-mode .burp-item,
+.dark-mode .burp-item *,
+.dark-mode .tools-section,
+.dark-mode .tools-section *,
+.dark-mode .tool-tag,
+.dark-mode .recommendation-item,
+.dark-mode .recommendation-content,
+.dark-mode .technique-description,
+.dark-mode .manual-testing,
+.dark-mode .scanner-config,
+.dark-mode .extensions-list,
+.dark-mode .attack-vector,
+.dark-mode .risk-description,
+.dark-mode .vulnerability-details,
+.dark-mode .testing-steps {
+    background: #161b22 !important;
+    color: #e6edf3 !important;
+    border-color: #30363d !important;
+}
+
+/* Enhanced Burp Suite Recommendations */
+.dark-mode .burp-recommendations {
+    background: #0d1117 !important;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .priority-section {
+    background: #161b22 !important;
+    border: 1px solid #30363d;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .priority-high {
+    border-left: 4px solid #f85149;
+    background: linear-gradient(90deg, rgba(248, 81, 73, 0.1) 0%, #161b22 20%) !important;
+}
+
+.dark-mode .priority-high h3 {
+    color: #ff7b72 !important;
+    text-shadow: 0 2px 4px rgba(248, 81, 73, 0.3);
+}
+
+.dark-mode .priority-medium {
+    border-left: 4px solid #d29922;
+    background: linear-gradient(90deg, rgba(210, 153, 34, 0.1) 0%, #161b22 20%) !important;
+}
+
+.dark-mode .priority-medium h3 {
+    color: #e3b341 !important;
+    text-shadow: 0 2px 4px rgba(210, 153, 34, 0.3);
+}
+
+.dark-mode .priority-low {
+    border-left: 4px solid #3fb950;
+    background: linear-gradient(90deg, rgba(63, 185, 80, 0.1) 0%, #161b22 20%) !important;
+}
+
+.dark-mode .priority-low h3 {
+    color: #56d364 !important;
+    text-shadow: 0 2px 4px rgba(63, 185, 80, 0.3);
+}
+
+.dark-mode .burp-item {
+    background: #0d1117 !important;
+    border: 1px solid #30363d;
+    transition: all 0.2s ease;
+}
+
+.dark-mode .burp-item:hover {
+    background: #161b22 !important;
+    border-color: #484f58;
+}
+
+.dark-mode .burp-technique {
+    background: #21262d !important;
+    color: #79c0ff !important;
+    border: 1px solid #30363d;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+}
+
+.dark-mode .tools-section {
+    background: #0d1117 !important;
+    border: 1px solid #30363d;
+}
+
+.dark-mode .tool-tag {
+    background: #21262d !important;
+    color: #a78bfa !important;
+    border: 1px solid #30363d !important;
+    transition: all 0.2s ease;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+}
+
+.dark-mode .tool-tag:hover {
+    background: #30363d !important;
+    color: #c4b5fd !important;
+    transform: translateY(-1px);
+}
+
+/* Focus States for Dark Mode */
+.dark-mode .export-btn:focus,
+.dark-mode .copy-btn:focus,
+.dark-mode .copy-section-btn:focus,
+.dark-mode .retry-btn:focus {
+    outline: 2px solid #58a6ff;
+    outline-offset: 2px;
+    background: #30363d;
+}
+
+.dark-mode .info-item:focus-within,
+.dark-mode .header-item:focus-within,
+.dark-mode .tech-item:focus-within {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+/* Dark Mode Security Headers - Color Coding with Borders */
+.dark-mode .security-header.present {
+    background: #161b22 !important;
+    border: 2px solid #2ea043 !important;
+    border-left: 4px solid #2ea043 !important;
+}
+
+.dark-mode .security-header.missing {
+    background: #161b22 !important;
+    border: 2px solid #f85149 !important;
+    border-left: 4px solid #f85149 !important;
+}
+
+.dark-mode .status-present {
+    background: rgba(46, 160, 67, 0.2) !important;
+    color: #56d364 !important;
+    border: 1px solid #2ea043 !important;
+    font-weight: 700 !important;
+}
+
+.dark-mode .status-missing {
+    background: rgba(248, 81, 73, 0.2) !important;
+    color: #ff7b72 !important;
+    border: 1px solid #f85149 !important;
+    font-weight: 700 !important;
+}
+
+.dark-mode .security-header {
+    transition: all 0.2s ease;
+}
+
+.dark-mode .security-header.present:hover {
+    background: #0d1117 !important;
+    border-color: #56d364 !important;
+    box-shadow: 0 4px 12px rgba(46, 160, 67, 0.2);
+}
+
+.dark-mode .security-header.missing:hover {
+    background: #0d1117 !important;
+    border-color: #ff7b72 !important;
+    box-shadow: 0 4px 12px rgba(248, 81, 73, 0.2);
+}
+
+/* Enhanced Typography for Dark Mode */
+.dark-mode .section h3,
+.dark-mode .section h4 {
+    color: #f0f6fc;
+    font-weight: 600;
+}
+
+.dark-mode .section strong {
+    color: #f0f6fc;
+    font-weight: 600;
+}
+
+.dark-mode .section code {
+    background: #21262d;
+    color: #79c0ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #30363d;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Auto Dark Mode Detection */
+@media (prefers-color-scheme: dark) {
+    body:not(.light-mode) {
+        background: #0d1117;
+        color: #e6edf3;
+    }
+    
+    body:not(.light-mode) .section {
+        background: #161b22;
+        border: 1px solid #30363d;
+    }
+    
+    body:not(.light-mode) .section h2 {
+        color: #f0f6fc;
+    }
+    
+    body:not(.light-mode) .page-header {
+        background: #161b22;
+        border: 1px solid #30363d;
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .container {
@@ -1011,6 +1813,21 @@ body {
         flex-direction: column;
         gap: 15px;
         text-align: center;
+    }
+    
+    .export-controls {
+        align-items: center;
+        width: 100%;
+    }
+    
+    .export-group {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .export-btn {
+        font-size: 11px;
+        padding: 6px 10px;
     }
 
     .section {
