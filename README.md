@@ -1,54 +1,97 @@
 # 🛡️ PenTest Assistant Browser Extension
 
-A comprehensive browser extension designed for penetration testing and security information gathering. This extension provides three powerful tools to analyze websites for security assessments and reconnaissance.
+A comprehensive browser extension designed for penetration testing and security information gathering. This extension provides three powerful analysis tools plus **actionable Burp Suite attack vectors** to streamline your security assessment workflow from reconnaissance to exploitation.
 
 ## ✨ Features
 
 ### 1. 📋 Header Inspector
 - **HTTP Response Headers Analysis**: Automatically collects and displays all HTTP response headers
-- **Security Headers Assessment**: Identifies and evaluates critical security headers
-- **Security Score**: Provides a numerical security score (0-100) based on header configuration
-- **Server Information**: Extracts server technology and configuration details
-- **Security Recommendations**: Suggests improvements for better security posture
+- **Enhanced Security Assessment**: Identifies and evaluates 20+ security headers with weighted scoring
+- **Security Score**: Provides a comprehensive numerical security score (0-100) based on header configuration
+- **Server Information**: Extracts detailed server technology, CDN, load balancer, and application server details
+- **Cookie Security Analysis**: Evaluates cookie security flags and identifies session hijacking risks
+- **Information Disclosure Detection**: Identifies headers revealing sensitive server/framework information
+- **Caching Configuration Analysis**: Examines cache headers and identifies potential poisoning risks
+- **🎯 Burp Suite Attack Vectors**: Provides specific attack techniques and extension recommendations
 
-**Analyzed Headers Include:**
-- Content Security Policy (CSP)
-- HTTP Strict Transport Security (HSTS)
-- X-Frame-Options
-- X-Content-Type-Options
-- X-XSS-Protection
-- Referrer Policy
-- Permissions Policy
-- Cross-Origin policies
+**Enhanced Analysis Includes:**
+- **20+ Security Headers**: CSP, CSP Report-Only, HSTS, X-Frame-Options, Feature Policy, Certificate Transparency, Public Key Pinning, etc.
+- **Cookie Security**: Secure flag, HttpOnly, SameSite analysis with CSRF risk assessment
+- **Information Leakage**: Debug headers, source maps, version disclosure detection
+- **Caching Issues**: Cache poisoning vectors, header manipulation techniques
+- **CDN Detection**: Cloudflare, Amazon CloudFront, Azure CDN, Fastly identification
 
 ### 2. 🔍 Technology Stack Detector
-- **Comprehensive Technology Detection**: Identifies web technologies, frameworks, and libraries
-- **Categorized Results**: Organizes findings into logical categories
+- **Comprehensive Technology Detection**: Identifies 200+ web technologies, frameworks, and libraries
+- **Enhanced Categorization**: Organizes findings into 11 specialized categories
 - **Duplicate Handling**: Automatically collates duplicate detections and shows occurrence counts
 - **Version Detection**: Attempts to identify technology versions where possible
+- **Security & Development Tools**: Detects security measures and development environments
+- **🎯 Burp Suite Attack Vectors**: Technology-specific exploitation techniques and recommendations
 
-**Detection Categories:**
-- **Server Technologies**: Apache, Nginx, IIS, Cloudflare, etc.
-- **Frameworks**: React, Angular, Vue.js, Express.js, ASP.NET, etc.
-- **JavaScript Libraries**: jQuery, Bootstrap, D3.js, Chart.js, etc.
-- **CSS Frameworks**: Bootstrap, Tailwind CSS, Bulma, Foundation, etc.
-- **CMS Platforms**: WordPress, Drupal, Joomla, Magento, Shopify, etc.
-- **Analytics & Tracking**: Google Analytics, Facebook Pixel, Hotjar, etc.
+**Expanded Detection Categories:**
+- **Server Technologies**: Apache, Nginx, IIS, LiteSpeed, Caddy, Traefik identification
+- **Frameworks**: React, Angular, Vue.js, Express.js, ASP.NET, Django, Rails (60+ frameworks)
+- **JavaScript Libraries**: jQuery, Socket.io, Axios, Redux, GraphQL, HTMX, Alpine.js (40+ libraries)
+- **CSS Frameworks**: Bootstrap, Tailwind CSS, Bulma, Foundation, Material UI, etc.
+- **CMS Platforms**: WordPress, Drupal, Joomla, Magento, Shopify, Ghost, Craft CMS (15+ platforms)
+- **Analytics & Tracking**: Google Analytics, Facebook Pixel, Hotjar, Mixpanel, etc.
 - **Fonts & Typography**: Google Fonts, Font Awesome, Adobe Fonts, etc.
+- **🛡️ Security Tools**: reCAPTCHA, hCaptcha, WAF detection, bot protection, CSP reporting
+- **🔧 Development Tools**: Webpack, DevTools, source maps, error tracking, performance monitoring
+- **🌐 CDN Services**: jsDelivr, unpkg, cdnjs, Google CDN, Microsoft CDN (12+ CDNs)
+- **Other Technologies**: Additional specialized tools and services
 
 ### 3. 🔐 Certificate Analyzer
 - **SSL/TLS Certificate Details**: Extracts comprehensive certificate information
-- **HSTS Configuration Analysis**: Evaluates HTTP Strict Transport Security settings
+- **Enhanced HSTS Analysis**: Evaluates HTTP Strict Transport Security with subdomain coverage assessment
 - **Certificate Chain Information**: Displays certificate hierarchy when available
-- **Expiration Monitoring**: Shows certificate validity periods
-- **Security Recommendations**: Provides certificate-specific security advice
+- **Expiration Monitoring**: Shows certificate validity periods with detailed recommendations
+- **Certificate Pinning Detection**: Identifies public key pinning and certificate transparency
+- **🎯 Burp Suite Attack Vectors**: SSL/TLS-specific attack techniques and bypass methods
 
-**Certificate Information:**
-- Protocol and domain details
-- Certificate issuer and subject
-- Validity dates and expiration warnings
-- HSTS configuration and recommendations
-- Certificate-related security headers
+**Enhanced Certificate Analysis:**
+- Protocol and domain details with security assessment
+- Certificate issuer, subject, and trust chain validation
+- Validity dates and expiration warnings with timeline recommendations
+- HSTS configuration with max-age evaluation and subdomain inclusion analysis
+- Certificate transparency and public key pinning detection
+- SSL/TLS attack vectors: certificate substitution, mixed content, SSL stripping techniques
+
+### 🎯 Burp Suite Attack Vectors (NEW!)
+The extension now provides **intelligent attack vector recommendations** based on discovered vulnerabilities and technologies, transforming reconnaissance into actionable penetration testing guidance.
+
+**Smart Analysis Engine:**
+- **Priority-Based Recommendations**: High/Medium/Low priority attack vectors with color-coded risk indicators
+- **Technology-Specific Attacks**: Framework-specific exploitation techniques (React XSS, WordPress vulnerabilities, etc.)
+- **Security Gap Analysis**: Correlates missing security headers with specific attack techniques
+- **Automated Burp Setup**: Provides exact extension recommendations and scanner configurations
+
+**Attack Vector Categories:**
+- **🔴 High Priority**: Critical vulnerabilities requiring immediate attention (missing CSP, CSRF vulnerabilities, debug information exposure)
+- **🟡 Medium Priority**: Important security issues with moderate risk (framework vulnerabilities, weak HSTS policies, cookie security)
+- **🟢 Low Priority**: Information disclosure and reconnaissance opportunities (version disclosures, cache misconfigurations)
+
+**Burp Suite Integration:**
+- **Specific Techniques**: Exact payloads and testing methodologies for each vulnerability
+- **Extension Recommendations**: Curated list of Burp extensions for each attack type (XSS Validator, DOM Invader, etc.)
+- **Scanner Configuration**: Tailored scanner settings for detected technologies and vulnerabilities
+- **Manual Testing Steps**: Step-by-step manual testing procedures with specific parameters
+
+**Example Attack Vectors:**
+```
+🔴 HIGH PRIORITY: CSRF Protection
+Description: Cookies without SameSite protection - CSRF possible
+🎯 Burp Technique: Generate CSRF PoCs, test cross-origin requests
+🔧 Extensions: CSRF PoC Generator, CSRF Scanner
+👤 Manual Testing: Test form submission from external domain
+
+🟡 MEDIUM PRIORITY: React Framework
+Description: React application detected
+🎯 Burp Technique: Test DOM-based XSS, client-side template injection
+🔧 Extensions: DOM Invader, XSS Validator, JavaScript Security Scanner
+⚙️ Scanner Config: Enable DOM-based vulnerability scanning
+```
 
 ## 🚀 Installation
 
@@ -99,19 +142,29 @@ A comprehensive browser extension designed for penetration testing and security 
 4. Check HSTS settings and recommendations
 5. Export certificate analysis for reporting
 
+### Burp Suite Attack Vectors
+Every analysis now includes a dedicated **"🎯 Burp Suite Attack Vectors"** section that provides:
+1. **Prioritized Attack Roadmap**: Color-coded recommendations based on discovered vulnerabilities
+2. **Specific Burp Techniques**: Exact testing methodologies and payloads for each vulnerability
+3. **Extension Setup Guide**: Curated list of essential Burp extensions for the detected attack vectors
+4. **Scanner Configuration**: Tailored scanner settings optimized for the target's technology stack
+5. **Manual Testing Procedures**: Step-by-step manual testing instructions with specific parameters
+
 ### Copy and Export Features
-- **Copy All Results**: Exports complete analysis in text format
-- **Copy Section**: Exports specific sections (headers, server info, etc.)
+- **Copy All Results**: Exports complete analysis including attack vectors in text format
+- **Copy Section**: Exports specific sections (headers, server info, attack vectors, etc.)
+- **Copy Attack Vectors**: Dedicated export for Burp Suite recommendations and setup instructions
 - **Clipboard Integration**: All copy operations use the system clipboard
-- **Formatted Output**: Text exports are formatted for easy readability in reports
+- **Formatted Output**: Text exports are formatted for easy readability in reports and testing documentation
 
 ## 🔧 Technical Details
 
 ### Architecture
 - **Manifest V3**: Uses the latest Chrome extension manifest version
-- **Service Worker**: Background script handles data collection and analysis
-- **Content Scripts**: Analyzes DOM and page-specific information
-- **Modern UI**: Professional, responsive interface with accessibility features
+- **Enhanced Service Worker**: Background script with intelligent analysis engine and attack vector correlation
+- **Advanced Content Scripts**: Deep DOM analysis with 200+ technology detection patterns
+- **Smart Recommendation Engine**: AI-powered vulnerability assessment with Burp Suite integration
+- **Modern UI**: Professional, responsive interface with accessibility features and real-time attack vector display
 
 ### Permissions Required
 - `activeTab`: Access to the current active tab for analysis
@@ -127,31 +180,34 @@ techStackDetector/
 ├── manifest.json              # Extension configuration
 ├── popup.html                 # Main interface
 ├── popup.js                   # Interface logic
-├── background.js              # Analysis engine
-├── content.js                 # DOM analysis
+├── background.js              # Enhanced analysis engine with attack vector correlation
+├── content.js                 # Advanced DOM analysis with 200+ detection patterns
 ├── styles/
 │   ├── popup.css             # Interface styling
-│   └── results.css           # Results page styling
+│   └── results.css           # Enhanced results styling with attack vector UI
 ├── results/
-│   ├── headers.html          # Header analysis results
-│   ├── technology.html       # Technology detection results
-│   └── certificate.html     # Certificate analysis results
+│   ├── headers.html          # Header analysis + Burp attack vectors
+│   ├── technology.html       # Technology detection + framework-specific attacks
+│   └── certificate.html     # Certificate analysis + SSL/TLS attack vectors
 ├── scripts/
-│   ├── headers-results.js    # Header results logic
-│   ├── technology-results.js # Technology results logic
-│   └── certificate-results.js # Certificate results logic
+│   ├── headers-results.js    # Header results + security attack recommendations
+│   ├── technology-results.js # Technology results + tech-specific vulnerabilities
+│   └── certificate-results.js # Certificate results + SSL attack techniques
 ├── icons/                    # Extension icons
-└── README.md                 # This file
+└── README.md                 # This documentation
 ```
 
 ## 🛡️ Security Considerations
 
 ### Ethical Use
-This extension is designed for **legitimate security testing and assessment purposes only**. Users should:
+This extension is designed for **legitimate security testing and assessment purposes only**. The inclusion of attack vectors and Burp Suite recommendations significantly increases the tool's capability and responsibility. Users should:
 - Only analyze websites they own or have explicit permission to test
 - Comply with applicable laws and regulations
 - Respect website terms of service and robots.txt files
 - Use findings responsibly for security improvement purposes
+- **⚠️ CRITICAL**: Use attack vectors only in authorized penetration testing environments
+- Ensure proper authorization before implementing any suggested attack techniques
+- Follow responsible disclosure practices for discovered vulnerabilities
 
 ### Privacy
 - **No Data Collection**: The extension does not collect or transmit personal data
@@ -190,6 +246,15 @@ This project is provided for educational and professional security testing purpo
 
 ## 🔄 Version History
 
+### v1.1.0 (Latest)
+- **🎯 NEW: Burp Suite Attack Vectors** - Intelligent attack recommendations with priority-based vulnerability assessment
+- **Enhanced Header Inspector**: Cookie security analysis, information disclosure detection, caching configuration analysis
+- **Expanded Technology Detection**: 200+ technologies across 11 categories including security tools, development tools, and CDN services
+- **Advanced Security Scoring**: Weighted scoring system with 20+ security headers evaluation
+- **Professional Attack Vector UI**: Color-coded priority system with specific Burp Suite integration guidance
+- **Comprehensive Export**: Attack vectors included in all copy/export functionality
+- **Enhanced User Experience**: Improved spacing, professional styling, and accessibility features
+
 ### v1.0.0
 - Initial release with three core analysis tools
 - Header Inspector with security scoring
@@ -208,4 +273,4 @@ For issues, questions, or suggestions:
 
 ---
 
-**Disclaimer**: This tool is intended for legitimate security testing and educational purposes only. Users are responsible for ensuring they have proper authorization before analyzing any websites or applications. 
+**⚠️ IMPORTANT DISCLAIMER**: This tool provides comprehensive security analysis including specific attack vectors and exploitation techniques. It is intended **EXCLUSIVELY** for legitimate security testing, authorized penetration testing, and educational purposes. Users are fully responsible for ensuring they have explicit written authorization before analyzing any websites or applications and implementing any suggested attack techniques. The developer assumes no responsibility for misuse of this tool. Always follow responsible disclosure practices and applicable laws and regulations. 

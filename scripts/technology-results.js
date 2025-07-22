@@ -127,6 +127,11 @@ function displayResults(data) {
             displayAnalysisNotes(data.data.note);
         }
         
+        // Display Burp Suite recommendations
+        if (data.data.burpRecommendations) {
+            displayBurpRecommendations(data.data.burpRecommendations);
+        }
+        
         // Show results and hide loading
         loadingContainer.style.display = 'none';
         resultsContainer.style.display = 'block';
@@ -285,6 +290,9 @@ async function copySectionData(section) {
                 break;
             case 'other':
                 text = generateCategoryReport('Other Technologies', data.other || []);
+                break;
+            case 'burp':
+                text = generateBurpReport(currentData.data.burpRecommendations);
                 break;
             default:
                 text = 'No data available for this section';
@@ -448,6 +456,225 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function displayBurpRecommendations(burpData) {
+    const burpSection = document.getElementById('burpRecommendationsSection');
+    const burpRecommendations = document.getElementById('burpRecommendations');
+    
+    burpRecommendations.innerHTML = '';
+    
+    // Check if there are any recommendations
+    const hasRecommendations = (burpData.highPriority && burpData.highPriority.length > 0) ||
+                              (burpData.mediumPriority && burpData.mediumPriority.length > 0) ||
+                              (burpData.lowPriority && burpData.lowPriority.length > 0);
+    
+    if (!hasRecommendations) {
+        burpRecommendations.innerHTML = '<div class="no-burp-recommendations">No specific attack vectors identified for detected technologies</div>';
+        burpSection.style.display = 'block';
+        return;
+    }
+    
+    // Display priority sections
+    displayPrioritySection(burpData.highPriority, 'High Priority Attack Vectors', 'priority-high', burpRecommendations);
+    displayPrioritySection(burpData.mediumPriority, 'Medium Priority Attack Vectors', 'priority-medium', burpRecommendations);
+    displayPrioritySection(burpData.lowPriority, 'Low Priority Attack Vectors', 'priority-low', burpRecommendations);
+    
+    // Display tools section
+    displayToolsSection(burpData, burpRecommendations);
+    
+    burpSection.style.display = 'block';
+}
+
+function displayPrioritySection(recommendations, title, className, container) {
+    if (!recommendations || recommendations.length === 0) return;
+    
+    const section = document.createElement('div');
+    section.className = `priority-section ${className}`;
+    
+    const sectionTitle = document.createElement('h3');
+    sectionTitle.textContent = title;
+    section.appendChild(sectionTitle);
+    
+    recommendations.forEach(rec => {
+        const item = document.createElement('div');
+        item.className = 'burp-item';
+        
+        item.innerHTML = `
+            <div class="burp-header">
+                <div class="burp-category">${escapeHtml(rec.category)}</div>
+                <div class="burp-risk">${escapeHtml(rec.risk)}</div>
+            </div>
+            <div class="burp-description">${escapeHtml(rec.description)}</div>
+            <div class="burp-technique">
+                <div class="burp-technique-label">🎯 Burp Technique:</div>
+                <div class="burp-technique-text">${escapeHtml(rec.burpTechnique)}</div>
+            </div>
+            ${rec.extensions ? `
+                <div class="burp-extensions">
+                    <div class="burp-extensions-label">🔧 Recommended Extensions:</div>
+                    <div class="burp-extensions-list">
+                        ${rec.extensions.map(ext => `<span class="burp-extension-tag">${escapeHtml(ext)}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            ${rec.scannerConfig ? `
+                <div class="burp-config">
+                    <div class="burp-config-label">⚙️ Scanner Configuration:</div>
+                    <div class="burp-config-text">${escapeHtml(rec.scannerConfig)}</div>
+                </div>
+            ` : ''}
+            ${rec.manualTesting ? `
+                <div class="burp-manual">
+                    <div class="burp-manual-label">👤 Manual Testing:</div>
+                    <div class="burp-manual-text">${escapeHtml(rec.manualTesting)}</div>
+                </div>
+            ` : ''}
+        `;
+        
+        section.appendChild(item);
+    });
+    
+    container.appendChild(section);
+}
+
+function displayToolsSection(burpData, container) {
+    const toolsSection = document.createElement('div');
+    toolsSection.className = 'tools-section';
+    
+    const toolsTitle = document.createElement('h3');
+    toolsTitle.textContent = '🛠️ Burp Suite Setup Recommendations';
+    toolsSection.appendChild(toolsTitle);
+    
+    const toolsGrid = document.createElement('div');
+    toolsGrid.className = 'tools-grid';
+    
+    // Extensions
+    if (burpData.burpExtensions && burpData.burpExtensions.length > 0) {
+        const extDiv = document.createElement('div');
+        extDiv.className = 'tool-category';
+        extDiv.innerHTML = `
+            <h4>🔧 Essential Extensions</h4>
+            <ul class="tool-list">
+                ${burpData.burpExtensions.map(ext => `<li>${escapeHtml(ext)}</li>`).join('')}
+            </ul>
+        `;
+        toolsGrid.appendChild(extDiv);
+    }
+    
+    // Scanner Configuration
+    if (burpData.scannerConfig && burpData.scannerConfig.length > 0) {
+        const configDiv = document.createElement('div');
+        configDiv.className = 'tool-category';
+        configDiv.innerHTML = `
+            <h4>⚙️ Scanner Configuration</h4>
+            <ul class="tool-list">
+                ${burpData.scannerConfig.map(config => `<li>${escapeHtml(config)}</li>`).join('')}
+            </ul>
+        `;
+        toolsGrid.appendChild(configDiv);
+    }
+    
+    // Manual Testing
+    if (burpData.manualTesting && burpData.manualTesting.length > 0) {
+        const manualDiv = document.createElement('div');
+        manualDiv.className = 'tool-category';
+        manualDiv.innerHTML = `
+            <h4>👤 Manual Testing Steps</h4>
+            <ul class="tool-list">
+                ${burpData.manualTesting.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
+            </ul>
+        `;
+        toolsGrid.appendChild(manualDiv);
+    }
+    
+    toolsSection.appendChild(toolsGrid);
+    container.appendChild(toolsSection);
+}
+
+function generateBurpReport(burpData) {
+    let report = `BURP SUITE ATTACK VECTORS\n`;
+    report += `${'='.repeat(30)}\n\n`;
+    
+    if (!burpData) {
+        report += `No Burp recommendations available\n`;
+        return report;
+    }
+    
+    // High Priority
+    if (burpData.highPriority && burpData.highPriority.length > 0) {
+        report += `HIGH PRIORITY ATTACK VECTORS\n`;
+        report += `${'-'.repeat(30)}\n`;
+        burpData.highPriority.forEach((rec, index) => {
+            report += `${index + 1}. ${rec.category} - ${rec.risk}\n`;
+            report += `   Description: ${rec.description}\n`;
+            report += `   Technique: ${rec.burpTechnique}\n`;
+            if (rec.extensions) {
+                report += `   Extensions: ${rec.extensions.join(', ')}\n`;
+            }
+            report += '\n';
+        });
+    }
+    
+    // Medium Priority
+    if (burpData.mediumPriority && burpData.mediumPriority.length > 0) {
+        report += `MEDIUM PRIORITY ATTACK VECTORS\n`;
+        report += `${'-'.repeat(32)}\n`;
+        burpData.mediumPriority.forEach((rec, index) => {
+            report += `${index + 1}. ${rec.category} - ${rec.risk}\n`;
+            report += `   Description: ${rec.description}\n`;
+            report += `   Technique: ${rec.burpTechnique}\n`;
+            if (rec.extensions) {
+                report += `   Extensions: ${rec.extensions.join(', ')}\n`;
+            }
+            report += '\n';
+        });
+    }
+    
+    // Low Priority
+    if (burpData.lowPriority && burpData.lowPriority.length > 0) {
+        report += `LOW PRIORITY ATTACK VECTORS\n`;
+        report += `${'-'.repeat(29)}\n`;
+        burpData.lowPriority.forEach((rec, index) => {
+            report += `${index + 1}. ${rec.category} - ${rec.risk}\n`;
+            report += `   Description: ${rec.description}\n`;
+            report += `   Technique: ${rec.burpTechnique}\n`;
+            if (rec.extensions) {
+                report += `   Extensions: ${rec.extensions.join(', ')}\n`;
+            }
+            report += '\n';
+        });
+    }
+    
+    // Tools and Configuration
+    if (burpData.burpExtensions && burpData.burpExtensions.length > 0) {
+        report += `RECOMMENDED EXTENSIONS\n`;
+        report += `${'-'.repeat(22)}\n`;
+        burpData.burpExtensions.forEach(ext => {
+            report += `- ${ext}\n`;
+        });
+        report += '\n';
+    }
+    
+    if (burpData.scannerConfig && burpData.scannerConfig.length > 0) {
+        report += `SCANNER CONFIGURATION\n`;
+        report += `${'-'.repeat(21)}\n`;
+        burpData.scannerConfig.forEach(config => {
+            report += `- ${config}\n`;
+        });
+        report += '\n';
+    }
+    
+    if (burpData.manualTesting && burpData.manualTesting.length > 0) {
+        report += `MANUAL TESTING STEPS\n`;
+        report += `${'-'.repeat(20)}\n`;
+        burpData.manualTesting.forEach(step => {
+            report += `- ${step}\n`;
+        });
+        report += '\n';
+    }
+    
+    return report;
 }
 
 // Handle page unload
