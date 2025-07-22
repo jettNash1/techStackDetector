@@ -411,6 +411,23 @@ function analyzeSecurityHeadersForBurp(securityHeaders, recommendations) {
     
     const headers = securityHeaders.headers;
     
+    // Advanced vulnerability analysis based on PortSwigger Web Security Academy
+    
+    // SQL Injection Risk Assessment
+    analyzeSQLInjectionRisk(headers, recommendations);
+    
+    // Advanced XSS Analysis
+    analyzeAdvancedXSSRisk(headers, recommendations);
+    
+    // Authentication & Session Management
+    analyzeAuthenticationRisk(headers, recommendations);
+    
+    // API Security Assessment
+    analyzeAPISecurityRisk(headers, recommendations);
+    
+    // Business Logic & Access Control
+    analyzeAccessControlRisk(headers, recommendations);
+    
     // CSP Analysis
     if (!headers['content-security-policy']) {
         recommendations.highPriority.push({
@@ -863,6 +880,187 @@ function extractMaxAge(hstsHeader) {
     return null;
 }
 
+// Advanced vulnerability analysis functions based on PortSwigger Web Security Academy
+
+function analyzeSQLInjectionRisk(headers, recommendations) {
+    // SQL Injection vulnerability indicators
+    const sqlVulnIndicators = [];
+    
+    // Check for database-related headers
+    if (headers['x-powered-by']?.toLowerCase().includes('php') || 
+        headers['server']?.toLowerCase().includes('apache') ||
+        headers['server']?.toLowerCase().includes('nginx')) {
+        sqlVulnIndicators.push('Database-backed application detected');
+    }
+    
+    // Check for error disclosure that might reveal SQL injection
+    const errorHeaders = ['x-debug', 'x-error', 'x-sql-error'];
+    errorHeaders.forEach(header => {
+        if (headers[header]) {
+            sqlVulnIndicators.push('Error disclosure headers detected');
+        }
+    });
+    
+    if (sqlVulnIndicators.length > 0) {
+        recommendations.highPriority.push({
+            category: 'SQL Injection',
+            risk: 'Data Breach / Remote Code Execution',
+            description: 'Application shows indicators of SQL injection vulnerability',
+            burpTechnique: 'Test with SQL injection payloads: \' OR 1=1--, UNION SELECT, time-based blind SQLi',
+            extensions: ['SQLiPy', 'SQL Injection Check', 'Hackvertor', 'CO2'],
+            scannerConfig: 'Enable all SQL injection checks, configure custom insertion points for all parameters',
+            manualTesting: 'Test: ?id=1\' OR 1=1--, ?search=admin\' UNION SELECT user,password FROM users--'
+        });
+    }
+}
+
+function analyzeAdvancedXSSRisk(headers, recommendations) {
+    // Enhanced XSS analysis beyond basic CSP
+    const xssRisks = [];
+    
+    // Check for X-XSS-Protection disabled
+    if (headers['x-xss-protection'] === '0') {
+        xssRisks.push('XSS Protection explicitly disabled');
+    }
+    
+    // Check for Content-Type that allows HTML
+    if (!headers['x-content-type-options'] || 
+        headers['content-type']?.includes('text/html')) {
+        xssRisks.push('MIME type confusion possible');
+    }
+    
+    // Check for JavaScript-heavy applications (React, Angular indicators)
+    if (headers['x-powered-by']?.toLowerCase().includes('express') ||
+        headers['server']?.toLowerCase().includes('node')) {
+        xssRisks.push('JavaScript application - DOM XSS risk');
+    }
+    
+    if (xssRisks.length > 0) {
+        recommendations.highPriority.push({
+            category: 'Advanced XSS',
+            risk: 'Account Takeover / Data Theft',
+            description: 'Multiple XSS attack vectors detected',
+            burpTechnique: 'Test: DOM XSS, reflected XSS, stored XSS, mutation XSS, client-side template injection',
+            extensions: ['DOM Invader', 'XSS Validator', 'Reflected Parameters', 'XSStrike'],
+            scannerConfig: 'Enable DOM-based XSS, stored XSS checks, JavaScript analysis',
+            manualTesting: 'Payloads: <img src=x onerror=alert(1)>, javascript:alert(document.domain), ${7*7}'
+        });
+    }
+}
+
+function analyzeAuthenticationRisk(headers, recommendations) {
+    // Authentication and session management vulnerabilities
+    const authRisks = [];
+    
+    // Check for authentication-related headers
+    if (headers['www-authenticate']) {
+        authRisks.push('HTTP authentication detected');
+    }
+    
+    if (headers['authorization']) {
+        authRisks.push('Authorization header present');
+    }
+    
+    // Check for JWT indicators
+    if (headers['authorization']?.toLowerCase().includes('bearer') ||
+        headers['x-auth-token'] ||
+        headers['x-jwt-token']) {
+        authRisks.push('JWT tokens detected');
+    }
+    
+    // Check for session management issues
+    if (!headers['set-cookie'] || 
+        !headers['set-cookie']?.toLowerCase().includes('secure') ||
+        !headers['set-cookie']?.toLowerCase().includes('httponly')) {
+        authRisks.push('Insecure session management');
+    }
+    
+    if (authRisks.length > 0) {
+        recommendations.mediumPriority.push({
+            category: 'Authentication Bypass',
+            risk: 'Privilege Escalation / Account Takeover',
+            description: 'Authentication mechanisms may be vulnerable to bypass',
+            burpTechnique: 'Test: JWT attacks, session fixation, password reset poisoning, OAuth flaws',
+            extensions: ['JWT Editor', 'AuthMatrix', 'Autorize', 'Session Timeout Test'],
+            scannerConfig: 'Enable authentication tests, session management checks',
+            manualTesting: 'Test: /admin, /api/users, password reset tampering, JWT manipulation'
+        });
+    }
+}
+
+function analyzeAPISecurityRisk(headers, recommendations) {
+    // API-specific security vulnerabilities
+    const apiRisks = [];
+    
+    // Check for API indicators
+    if (headers['content-type']?.includes('application/json') ||
+        headers['accept']?.includes('application/json') ||
+        headers['x-api-version'] ||
+        headers['x-ratelimit-limit']) {
+        apiRisks.push('REST API detected');
+    }
+    
+    // Check for GraphQL indicators
+    if (headers['content-type']?.includes('application/graphql') ||
+        headers['x-graphql-query']) {
+        apiRisks.push('GraphQL API detected');
+    }
+    
+    // Check for missing API security headers
+    if (!headers['x-ratelimit-limit'] && apiRisks.length > 0) {
+        apiRisks.push('No rate limiting detected');
+    }
+    
+    if (apiRisks.length > 0) {
+        recommendations.highPriority.push({
+            category: 'API Security',
+            risk: 'Data Breach / Business Logic Bypass',
+            description: 'API endpoints detected with potential security issues',
+            burpTechnique: 'Test: GraphQL introspection, REST API enumeration, mass assignment, NoSQL injection',
+            extensions: ['GraphQL Raider', 'API Security Audit', 'JSON Web Tokens', 'Param Miner'],
+            scannerConfig: 'Enable API-specific scanning, GraphQL introspection, JSON parameter mining',
+            manualTesting: 'Test: /api/v1/users, GraphQL {__schema}, HTTP method override, mass assignment'
+        });
+    }
+}
+
+function analyzeAccessControlRisk(headers, recommendations) {
+    // Access control and business logic vulnerabilities
+    const accessRisks = [];
+    
+    // Check for admin interface indicators
+    if (headers['x-admin-panel'] ||
+        headers['x-management-interface'] ||
+        headers['server']?.toLowerCase().includes('tomcat') ||
+        headers['server']?.toLowerCase().includes('jetty')) {
+        accessRisks.push('Administrative interface may be present');
+    }
+    
+    // Check for CORS misconfigurations
+    if (headers['access-control-allow-origin'] === '*' ||
+        headers['access-control-allow-credentials'] === 'true') {
+        accessRisks.push('CORS misconfiguration detected');
+    }
+    
+    // Check for file upload indicators
+    if (headers['content-type']?.includes('multipart/form-data') ||
+        headers['x-upload-limit']) {
+        accessRisks.push('File upload functionality detected');
+    }
+    
+    if (accessRisks.length > 0) {
+        recommendations.mediumPriority.push({
+            category: 'Access Control',
+            risk: 'Privilege Escalation / Data Access',
+            description: 'Broken access control vulnerabilities possible',
+            burpTechnique: 'Test: horizontal/vertical privilege escalation, directory traversal, file upload bypass',
+            extensions: ['Autorize', 'Upload Scanner', 'Directory Traversal Check', 'Bypass WAF'],
+            scannerConfig: 'Enable access control tests, file upload checks, traversal detection',
+            manualTesting: 'Test: ../../../etc/passwd, user ID manipulation, role-based access bypass'
+        });
+    }
+}
+
 function generateTechBurpRecommendations(technologies, url) {
     const recommendations = {
         highPriority: [],
@@ -883,6 +1081,9 @@ function generateTechBurpRecommendations(technologies, url) {
     // Add general recommendations
     addGeneralTechRecommendations(recommendations);
     
+    // Add PortSwigger Web Security Academy advanced techniques
+    addAdvancedPortSwiggerTechniques(recommendations, technologies);
+    
     return recommendations;
 }
 
@@ -894,10 +1095,11 @@ function analyzeFrameworksForBurp(frameworks, recommendations) {
             recommendations.mediumPriority.push({
                 category: 'React Framework',
                 risk: 'Client-Side Vulnerabilities',
-                description: 'React application detected',
-                burpTechnique: 'Test for DOM-based XSS, client-side template injection, React prop pollution',
-                extensions: ['DOM Invader', 'XSS Validator', 'JavaScript Security Scanner'],
-                scannerConfig: 'Enable DOM-based vulnerability scanning'
+                description: 'React application detected - multiple attack vectors possible',
+                burpTechnique: 'Test: DOM XSS via dangerouslySetInnerHTML, React Router manipulation, component prop injection, client-side prototype pollution',
+                extensions: ['DOM Invader', 'XSS Validator', 'JavaScript Security Scanner', 'Reflected Parameters'],
+                scannerConfig: 'Enable DOM-based vulnerability scanning, React-specific payloads',
+                manualTesting: 'Payloads: <img src=x onerror=alert(1)>, ${7*7}, constructor.prototype.polluted=1'
             });
         }
         
@@ -993,11 +1195,12 @@ function analyzeCMSForBurp(cmsplatforms, recommendations) {
         if (lowerCMS.includes('wordpress')) {
             recommendations.highPriority.push({
                 category: 'WordPress CMS',
-                risk: 'CMS-Specific Vulnerabilities',
-                description: 'WordPress detected - high-value target',
-                burpTechnique: 'Enumerate plugins/themes, test wp-admin, XML-RPC attacks, file upload',
-                extensions: ['WordPress Security Scanner', 'WPScan Passive Scanner'],
-                manualTesting: 'Check /wp-admin, /wp-content/uploads, xmlrpc.php'
+                risk: 'Multiple Critical Vulnerabilities',
+                description: 'WordPress detected - extensive attack surface with known vulnerabilities',
+                burpTechnique: 'Comprehensive WordPress testing: Plugin enumeration, theme vulnerabilities, XML-RPC amplification, user enumeration, SQL injection in plugins, file upload bypass, privilege escalation, REST API abuse',
+                extensions: ['WordPress Security Scanner', 'WPScan Passive Scanner', 'WordPress Exploitation Framework', 'Directory Traversal Check'],
+                scannerConfig: 'Enable WordPress-specific checks, plugin vulnerability scanning, REST API testing',
+                manualTesting: 'Test: /wp-admin/, /wp-json/wp/v2/users, /xmlrpc.php, /wp-content/uploads/, /?author=1, /wp-admin/admin-ajax.php'
             });
         }
         
@@ -1108,6 +1311,583 @@ function addGeneralTechRecommendations(recommendations) {
         'Check for admin/debug interfaces',
         'Review technology documentation for attack vectors'
     );
+}
+
+function addAdvancedPortSwiggerTechniques(recommendations, technologies) {
+    // Advanced techniques based on PortSwigger Web Security Academy
+    
+    // Add advanced vulnerability techniques based on detected technologies
+    if (technologies.security && technologies.security.length > 0) {
+        addAdvancedSecurityTesting(recommendations, technologies.security);
+    }
+    
+    // Add modern attack vector techniques
+    addModernAttackTechniques(recommendations);
+    
+    // Add business logic testing
+    addBusinessLogicTesting(recommendations);
+    
+    // Add advanced authentication testing
+    addAdvancedAuthTesting(recommendations);
+    
+    // Add comprehensive PortSwigger methodologies - Round 2
+    addAdvancedCSRFTechniques(recommendations, technologies);
+    addClickjackingTechniques(recommendations, technologies);
+    addAdvancedCORSTechniques(recommendations, technologies);
+    addFileUploadExploitation(recommendations, technologies);
+    addWebSocketExploitation(recommendations, technologies);
+    addAdvancedDeserializationTechniques(recommendations, technologies);
+    addRaceConditionTechniques(recommendations, technologies);
+    addWebLLMAttackTechniques(recommendations, technologies);
+    addAdvancedCachePoisoningTechniques(recommendations, technologies);
+    addRequestSmugglingTechniques(recommendations, technologies);
+    addDOMManipulationTechniques(recommendations, technologies);
+    addOAuthExploitationTechniques(recommendations, technologies);
+    addWAFBypassTechniques(recommendations, technologies);
+    addOutOfBandTechniques(recommendations, technologies);
+}
+
+function addAdvancedSecurityTesting(recommendations, securityIndicators) {
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('sql injection')) {
+            recommendations.highPriority.push({
+                category: 'Advanced SQL Injection',
+                risk: 'Database Compromise / RCE',
+                description: 'SQL injection indicators detected - comprehensive testing required',
+                burpTechnique: 'Advanced SQLi: Union-based, Boolean-based blind, time-based blind, error-based, second-order injection, NoSQL injection',
+                extensions: ['SQLiPy', 'CO2', 'Hackvertor', 'SQL Injection Check', 'NoSQL Injection'],
+                scannerConfig: 'Enable all SQL injection techniques, configure custom payloads, test all parameters',
+                manualTesting: 'Payloads: \' UNION SELECT @@version--, \' AND SLEEP(5)--, {"$ne": null}, \' OR extractvalue(1,concat(0x7e,version()))--, {"$where": "sleep(5000)"}'
+            });
+        }
+        
+        if (lowerIndicator.includes('xxe')) {
+            recommendations.highPriority.push({
+                category: 'XXE Injection',
+                risk: 'Server-Side Request Forgery / File Disclosure',
+                description: 'XML processing detected - XXE vulnerability possible',
+                burpTechnique: 'XXE attacks: External entity injection, blind XXE via error messages, out-of-band XXE, XXE to SSRF',
+                extensions: ['Content Type Converter', 'XML External Entity'],
+                scannerConfig: 'Enable XXE testing, configure XML parsing checks',
+                manualTesting: 'Payloads: <!DOCTYPE test [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>, <!ENTITY xxe SYSTEM "http://attacker.com/">'
+            });
+        }
+        
+        if (lowerIndicator.includes('template') || lowerIndicator.includes('ssti')) {
+            recommendations.highPriority.push({
+                category: 'Server-Side Template Injection',
+                risk: 'Remote Code Execution',
+                description: 'Template engine detected - SSTI vulnerability possible',
+                burpTechnique: 'SSTI attacks: Template syntax injection, expression language injection, sandbox escape',
+                extensions: ['Template Injector', 'Expression Language Injection'],
+                scannerConfig: 'Enable template injection checks for all frameworks',
+                manualTesting: 'Payloads: {{7*7}}, ${7*7}, #{7*7}, <%=7*7%>, {{config}}, ${T(java.lang.Runtime).getRuntime().exec("id")}'
+            });
+        }
+        
+        if (lowerIndicator.includes('jwt')) {
+            recommendations.mediumPriority.push({
+                category: 'JWT Attacks',
+                risk: 'Authentication Bypass / Privilege Escalation',
+                description: 'JWT tokens detected - multiple attack vectors available',
+                burpTechnique: 'JWT attacks: Algorithm confusion, signature verification bypass, key confusion, weak secrets',
+                extensions: ['JWT Editor', 'JSON Web Tokens', 'JWT Fuzzhelper'],
+                scannerConfig: 'Enable JWT testing, signature validation bypass',
+                manualTesting: 'Test: alg:none, HS256→RS256 confusion, weak HMAC secrets, kid parameter manipulation'
+            });
+        }
+        
+        if (lowerIndicator.includes('graphql')) {
+            recommendations.mediumPriority.push({
+                category: 'GraphQL Vulnerabilities',
+                risk: 'Information Disclosure / DoS',
+                description: 'GraphQL implementation detected - API security issues possible',
+                burpTechnique: 'GraphQL attacks: Introspection queries, query depth/complexity attacks, field suggestion attacks',
+                extensions: ['GraphQL Raider', 'InQL Scanner'],
+                scannerConfig: 'Enable GraphQL introspection, depth limit testing',
+                manualTesting: 'Queries: {__schema {types {name}}}, deeply nested queries, batch query attacks'
+            });
+        }
+    });
+}
+
+function addModernAttackTechniques(recommendations) {
+    // Modern attack vectors from PortSwigger Academy
+    recommendations.mediumPriority.push({
+        category: 'Web Cache Deception',
+        risk: 'Information Disclosure',
+        description: 'Cache implementation detected - cache deception possible',
+        burpTechnique: 'Cache deception: Path confusion, parameter cloaking, delimiter discrepancies',
+        extensions: ['Cache Poisoning Scanner', 'Param Miner'],
+        scannerConfig: 'Enable cache testing, parameter pollution detection',
+        manualTesting: 'Test: /profile/..%2fstatic%2ftest.css, cache key manipulation, normalization discrepancies'
+    });
+    
+    recommendations.mediumPriority.push({
+        category: 'HTTP Request Smuggling',
+        risk: 'Security Control Bypass',
+        description: 'HTTP processing detected - request smuggling possible',
+        burpTechnique: 'Request smuggling: CL.TE, TE.CL, TE.TE attacks, front-end security bypass',
+        extensions: ['HTTP Request Smuggler', 'Turbo Intruder'],
+        scannerConfig: 'Enable HTTP smuggling detection, chunked encoding tests',
+        manualTesting: 'Test: Content-Length vs Transfer-Encoding conflicts, chunked encoding manipulation'
+    });
+    
+    recommendations.lowPriority.push({
+        category: 'Host Header Injection',
+        risk: 'Password Reset Poisoning',
+        description: 'HTTP host processing - host header manipulation possible',
+        burpTechnique: 'Host header attacks: Password reset poisoning, cache poisoning, authentication bypass',
+        extensions: ['Host Header Injection', 'Param Miner'],
+        scannerConfig: 'Enable host header manipulation testing',
+        manualTesting: 'Test: X-Forwarded-Host, X-Host, X-Forwarded-Server headers with attacker domains'
+    });
+}
+
+function addBusinessLogicTesting(recommendations) {
+    recommendations.mediumPriority.push({
+        category: 'Business Logic Vulnerabilities',
+        risk: 'Financial Loss / Data Manipulation',
+        description: 'Business logic flaws often require manual testing',
+        burpTechnique: 'Business logic testing: Race conditions, workflow bypass, price manipulation, quantity limits',
+        extensions: ['Race Condition', 'Turbo Intruder', 'Autorize'],
+        scannerConfig: 'Enable business logic checks, race condition detection',
+        manualTesting: 'Test: Negative quantities, price manipulation, workflow step skipping, concurrent requests'
+    });
+}
+
+function addAdvancedAuthTesting(recommendations) {
+    recommendations.mediumPriority.push({
+        category: 'Advanced Authentication Bypass',
+        risk: 'Account Takeover',
+        description: 'Authentication mechanisms detected - advanced bypass techniques available',
+        burpTechnique: 'Auth bypass: Password reset poisoning, OAuth vulnerabilities, 2FA bypass, session puzzling',
+        extensions: ['AuthMatrix', 'OAuth Scanner', 'Session Timeout Test'],
+        scannerConfig: 'Enable authentication bypass detection, OAuth testing',
+        manualTesting: 'Test: OAuth redirect_uri manipulation, 2FA brute force, password reset race conditions'
+    });
+}
+
+// Advanced PortSwigger Web Security Academy Methodologies - Round 2
+
+function addAdvancedCSRFTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('csrf')) {
+            if (lowerIndicator.includes('missing')) {
+                recommendations.highPriority.push({
+                    category: 'Advanced CSRF Exploitation',
+                    risk: 'Account Takeover / Unauthorized Actions',
+                    description: 'CSRF protection missing - comprehensive exploitation possible',
+                    burpTechnique: 'CSRF attacks: PoC generation, JSON-based CSRF, multipart CSRF, SameSite bypass, referrer validation bypass',
+                    extensions: ['CSRF PoC Generator', 'CSRF Scanner', 'Request Smuggler'],
+                    scannerConfig: 'Enable CSRF detection, SameSite testing, referrer validation bypass',
+                    manualTesting: 'Generate HTML PoC: <form action="victim.com/transfer" method="POST"><input name="amount" value="1000"><input name="to" value="attacker"></form>, test JSON CSRF with content-type manipulation'
+                });
+            } else if (lowerIndicator.includes('json')) {
+                recommendations.mediumPriority.push({
+                    category: 'JSON-based CSRF',
+                    risk: 'API Endpoint Exploitation',
+                    description: 'JSON endpoints detected - content-type based CSRF possible',
+                    burpTechnique: 'JSON CSRF: Content-Type manipulation, flash-based CSRF, form-based JSON submission',
+                    extensions: ['Content Type Converter', 'CSRF PoC Generator'],
+                    manualTesting: 'Test: <form enctype="text/plain"><input name=\'{"transfer":1000,"to":"attacker"}\' value=""></form>'
+                });
+            }
+        }
+    });
+}
+
+function addClickjackingTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('clickjacking') || lowerIndicator.includes('frame protection')) {
+            recommendations.mediumPriority.push({
+                category: 'Clickjacking Exploitation',
+                risk: 'UI Redressing Attack',
+                description: 'Frame protection missing - clickjacking attacks possible',
+                burpTechnique: 'Clickjacking: UI redressing, iframe overlays, double clickjacking, drag & drop attacks, touch event hijacking',
+                extensions: ['Clickjacking PoC Generator', 'Frame Buster Bypass'],
+                scannerConfig: 'Enable clickjacking detection, frame options testing',
+                manualTesting: 'Create PoC: <iframe src="victim.com" style="opacity:0.5; position:absolute; top:click_y; left:click_x;"></iframe>, test with transparent overlays'
+            });
+        }
+    });
+}
+
+function addAdvancedCORSTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('cors')) {
+            if (lowerIndicator.includes('wildcard')) {
+                recommendations.highPriority.push({
+                    category: 'CORS Misconfiguration',
+                    risk: 'Cross-Origin Data Theft',
+                    description: 'Wildcard CORS origin detected - sensitive data exfiltration possible',
+                    burpTechnique: 'CORS exploitation: Credential-enabled requests, null origin bypass, subdomain takeover, pre-flight bypass',
+                    extensions: ['CORS Scanner', 'Origin Reflector'],
+                    scannerConfig: 'Enable CORS misconfiguration detection, origin reflection testing',
+                    manualTesting: 'Test origins: null, attacker.com, victim.com.attacker.com, data:, file:, test credential inclusion'
+                });
+            } else if (lowerIndicator.includes('subdomain')) {
+                recommendations.mediumPriority.push({
+                    category: 'Subdomain CORS Attack',
+                    risk: 'Subdomain Takeover to CORS Bypass',
+                    description: 'Subdomain CORS trust detected - takeover attack possible',
+                    burpTechnique: 'Subdomain attacks: DNS takeover, subdomain enumeration, wildcard subdomain abuse',
+                    extensions: ['Subdomain Takeover Scanner', 'DNS Resolver'],
+                    manualTesting: 'Enumerate subdomains, test for abandoned CNAME records, attempt subdomain registration'
+                });
+            }
+        }
+    });
+}
+
+function addFileUploadExploitation(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('file upload')) {
+            if (lowerIndicator.includes('unrestricted')) {
+                recommendations.highPriority.push({
+                    category: 'File Upload Exploitation',
+                    risk: 'Remote Code Execution',
+                    description: 'Unrestricted file upload detected - RCE via file upload possible',
+                    burpTechnique: 'File upload attacks: Web shell upload, polyglot files, MIME type bypass, double extension, null byte injection, path traversal',
+                    extensions: ['Upload Scanner', 'File Upload Vulnerabilities', 'Polyglot Generator'],
+                    scannerConfig: 'Enable file upload vulnerability scanning, extension bypass testing',
+                    manualTesting: 'Test: shell.php.jpg, shell.asp;.jpg, shell.php%00.jpg, ../../../shell.php, polyglot files (GIF+PHP)'
+                });
+            } else if (lowerIndicator.includes('dangerous')) {
+                recommendations.highPriority.push({
+                    category: 'Dangerous File Upload',
+                    risk: 'Code Execution / Malware Upload',
+                    description: 'Dangerous file types accepted - direct code execution possible',
+                    burpTechnique: 'Dangerous file exploitation: Executable upload, server-side script execution, client-side attacks',
+                    extensions: ['File Upload Vulnerabilities', 'Executable Scanner'],
+                    manualTesting: 'Upload: .php, .asp, .jsp files, test execution contexts'
+                });
+            } else if (lowerIndicator.includes('ajax')) {
+                recommendations.mediumPriority.push({
+                    category: 'AJAX File Upload',
+                    risk: 'Client-Side Upload Bypass',
+                    description: 'AJAX file upload detected - client-side validation bypass possible',
+                    burpTechnique: 'AJAX upload bypass: Client-side validation bypass, direct API calls, race conditions',
+                    extensions: ['JavaScript Deobfuscator', 'AJAX Crawler'],
+                    manualTesting: 'Bypass client-side validation, intercept and modify upload requests'
+                });
+            }
+        }
+    });
+}
+
+function addWebSocketExploitation(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('websocket')) {
+            if (lowerIndicator.includes('insecure')) {
+                recommendations.highPriority.push({
+                    category: 'WebSocket Security',
+                    risk: 'Man-in-the-Middle / Message Injection',
+                    description: 'Insecure WebSocket implementation detected',
+                    burpTechnique: 'WebSocket attacks: Message injection, origin bypass, CSRF via WebSocket, denial of service, message replay',
+                    extensions: ['WebSocket Security Scanner', 'WebSocket Fuzzer'],
+                    scannerConfig: 'Enable WebSocket testing, message injection detection',
+                    manualTesting: 'Test: Cross-origin WebSocket connections, message tampering, authentication bypass'
+                });
+            } else if (lowerIndicator.includes('origin validation missing')) {
+                recommendations.mediumPriority.push({
+                    category: 'WebSocket Origin Bypass',
+                    risk: 'Cross-Origin WebSocket Attacks',
+                    description: 'WebSocket origin validation missing - cross-site attacks possible',
+                    burpTechnique: 'Origin bypass: Cross-origin WebSocket connections, CSRF via WebSocket, unauthorized access',
+                    extensions: ['WebSocket Security Scanner'],
+                    manualTesting: 'Connect from different origins, test null origin, manipulate Origin header'
+                });
+            }
+        }
+    });
+}
+
+function addAdvancedDeserializationTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('deserialization')) {
+            recommendations.highPriority.push({
+                category: 'Insecure Deserialization',
+                risk: 'Remote Code Execution',
+                description: 'Data deserialization detected - RCE via object injection possible',
+                burpTechnique: 'Deserialization attacks: Java deserialization, PHP object injection, Python pickle, .NET deserialization, JSON deserialization',
+                extensions: ['Java Deserialization Scanner', 'PHP Object Injection', '.NET Deserializer'],
+                scannerConfig: 'Enable deserialization vulnerability scanning, object injection testing',
+                manualTesting: 'Test: ysoserial payloads, PHP object injection, pickle RCE, .NET formatters'
+            });
+        } else if (lowerIndicator.includes('eval') && lowerIndicator.includes('user')) {
+            recommendations.highPriority.push({
+                category: 'Code Injection via Eval',
+                risk: 'Remote Code Execution',
+                description: 'User-controlled eval detected - direct code injection possible',
+                burpTechnique: 'Code injection: JavaScript injection, expression language injection, template injection, eval bypass',
+                extensions: ['Code Injection Scanner', 'Template Injector'],
+                manualTesting: 'Payloads: alert(1), require("child_process").exec("id"), ${7*7}'
+            });
+        }
+    });
+}
+
+function addRaceConditionTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('race condition')) {
+            if (lowerIndicator.includes('financial')) {
+                recommendations.highPriority.push({
+                    category: 'Financial Race Conditions',
+                    risk: 'Financial Loss / Logic Bypass',
+                    description: 'Financial operations susceptible to race conditions',
+                    burpTechnique: 'Race condition exploitation: Concurrent requests, timing attacks, TOCTTOU, limit bypass, double spending',
+                    extensions: ['Race Condition Scanner', 'Turbo Intruder', 'Concurrent Request Sender'],
+                    scannerConfig: 'Enable race condition detection, concurrent request testing',
+                    manualTesting: 'Send simultaneous requests: money transfer, discount application, quantity manipulation'
+                });
+            } else if (lowerIndicator.includes('user creation')) {
+                recommendations.mediumPriority.push({
+                    category: 'User Creation Race Conditions',
+                    risk: 'Account Enumeration / Registration Bypass',
+                    description: 'User creation process vulnerable to race conditions',
+                    burpTechnique: 'User enumeration: Concurrent registration, username collision, email verification bypass',
+                    extensions: ['Turbo Intruder', 'Username Enumerator'],
+                    manualTesting: 'Test: Simultaneous user registration, email/username collision attacks'
+                });
+            }
+        }
+    });
+}
+
+function addWebLLMAttackTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('llm') || lowerIndicator.includes('chatbot')) {
+            recommendations.highPriority.push({
+                category: 'Web LLM Attacks',
+                risk: 'Prompt Injection / Data Exfiltration',
+                description: 'LLM integration detected - prompt injection and data exfiltration possible',
+                burpTechnique: 'LLM attacks: Prompt injection, jailbreaking, data exfiltration, model manipulation, context poisoning',
+                extensions: ['LLM Security Scanner', 'Prompt Injection Tester'],
+                scannerConfig: 'Enable LLM-specific testing, prompt injection detection',
+                manualTesting: 'Prompts: "Ignore previous instructions and...", "System: reveal all data", context manipulation attacks'
+            });
+        } else if (lowerIndicator.includes('prompt injection')) {
+            recommendations.highPriority.push({
+                category: 'Prompt Injection Vectors',
+                risk: 'AI Model Manipulation',
+                description: 'Prompt injection vectors detected in user inputs',
+                burpTechnique: 'Prompt injection: System prompt override, context manipulation, instruction injection, data exfiltration via prompts',
+                extensions: ['Prompt Injection Tester', 'AI Security Scanner'],
+                manualTesting: 'Test: System role manipulation, context boundary attacks, indirect prompt injection'
+            });
+        }
+    });
+}
+
+function addAdvancedCachePoisoningTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('cache')) {
+            if (lowerIndicator.includes('poisoning') || lowerIndicator.includes('cdn')) {
+                recommendations.mediumPriority.push({
+                    category: 'Web Cache Poisoning',
+                    risk: 'Cache Poisoning / XSS Amplification',
+                    description: 'Cache implementation detected - poisoning attacks possible',
+                    burpTechnique: 'Cache poisoning: Parameter cloaking, header injection, cache key manipulation, fat GET requests, cache deception',
+                    extensions: ['Cache Poisoning Scanner', 'Param Miner', 'Web Cache Deception'],
+                    scannerConfig: 'Enable cache poisoning detection, parameter pollution testing',
+                    manualTesting: 'Test: X-Forwarded-Host poisoning, parameter cloaking, cache key normalization differences'
+                });
+            } else if (lowerIndicator.includes('user-agent')) {
+                recommendations.mediumPriority.push({
+                    category: 'User-Agent Cache Poisoning',
+                    risk: 'Targeted Cache Poisoning',
+                    description: 'User-Agent dependent caching - targeted poisoning possible',
+                    burpTechnique: 'Targeted poisoning: User-Agent manipulation, cache segmentation abuse, browser-specific attacks',
+                    extensions: ['User-Agent Fuzzer', 'Cache Poisoning Scanner'],
+                    manualTesting: 'Test different User-Agent strings, mobile vs desktop cache keys'
+                });
+            }
+        }
+    });
+}
+
+function addRequestSmugglingTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('request smuggling') || lowerIndicator.includes('proxy')) {
+            recommendations.highPriority.push({
+                category: 'HTTP Request Smuggling',
+                risk: 'Security Control Bypass',
+                description: 'HTTP processing chain detected - request smuggling possible',
+                burpTechnique: 'Request smuggling: CL.TE attacks, TE.CL attacks, TE.TE attacks, front-end security bypass, cache poisoning via smuggling',
+                extensions: ['HTTP Request Smuggler', 'Turbo Intruder', 'Smuggling Detection'],
+                scannerConfig: 'Enable request smuggling detection, chunked encoding tests',
+                manualTesting: 'Test: Content-Length vs Transfer-Encoding conflicts, chunked encoding edge cases, header manipulation'
+            });
+        } else if (lowerIndicator.includes('header manipulation')) {
+            recommendations.mediumPriority.push({
+                category: 'HTTP Header Manipulation',
+                risk: 'Request Processing Bypass',
+                description: 'HTTP header manipulation possible - processing bypass attacks',
+                burpTechnique: 'Header manipulation: Request line injection, header injection, HTTP/2 downgrade attacks',
+                extensions: ['Header Injection Scanner', 'HTTP/2 Fuzzer'],
+                manualTesting: 'Test: Header injection, request line manipulation, protocol downgrade'
+            });
+        }
+    });
+}
+
+function addDOMManipulationTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('dom manipulation')) {
+            recommendations.highPriority.push({
+                category: 'DOM-based Vulnerabilities',
+                risk: 'Client-Side Code Execution',
+                description: 'DOM manipulation patterns detected - client-side attacks possible',
+                burpTechnique: 'DOM attacks: DOM XSS, innerHTML injection, location manipulation, postMessage abuse, client-side prototype pollution',
+                extensions: ['DOM Invader', 'XSS Validator', 'Client-Side Scanner'],
+                scannerConfig: 'Enable DOM-based vulnerability scanning, client-side injection testing',
+                manualTesting: 'Test: location.hash manipulation, postMessage injection, innerHTML with user input'
+            });
+        } else if (lowerIndicator.includes('postmessage')) {
+            recommendations.mediumPriority.push({
+                category: 'PostMessage Vulnerabilities',
+                risk: 'Cross-Frame Communication Abuse',
+                description: 'PostMessage without origin validation - cross-frame attacks possible',
+                burpTechnique: 'PostMessage attacks: Origin bypass, message injection, cross-frame scripting, parent frame manipulation',
+                extensions: ['PostMessage Scanner', 'Frame Communication Analyzer'],
+                manualTesting: 'Test: Message injection from arbitrary origins, null origin bypass, wildcard origin abuse'
+            });
+        }
+    });
+}
+
+function addOAuthExploitationTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('oauth')) {
+            recommendations.highPriority.push({
+                category: 'OAuth 2.0 Vulnerabilities',
+                risk: 'Account Takeover / Authorization Bypass',
+                description: 'OAuth implementation detected - multiple attack vectors possible',
+                burpTechnique: 'OAuth attacks: redirect_uri manipulation, state parameter bypass, authorization code interception, token leakage, scope escalation',
+                extensions: ['OAuth Scanner', 'Authorization Testing', 'JWT Editor'],
+                scannerConfig: 'Enable OAuth flow testing, redirect URI validation, state parameter checks',
+                manualTesting: 'Test: redirect_uri=attacker.com, missing state parameter, authorization code in referrer, scope manipulation'
+            });
+        } else if (lowerIndicator.includes('social oauth')) {
+            recommendations.mediumPriority.push({
+                category: 'Social OAuth Attacks',
+                risk: 'Social Account Takeover',
+                description: 'Social OAuth providers detected - provider-specific attacks possible',
+                burpTechnique: 'Social OAuth: Provider confusion, account linking attacks, email verification bypass, provider enumeration',
+                extensions: ['Social Auth Scanner', 'OAuth Provider Fuzzer'],
+                manualTesting: 'Test: Account linking without verification, provider confusion attacks, email enumeration'
+            });
+        }
+    });
+}
+
+function addWAFBypassTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('waf')) {
+            recommendations.mediumPriority.push({
+                category: 'WAF Bypass Techniques',
+                risk: 'Security Control Evasion',
+                description: 'Web Application Firewall detected - bypass techniques available',
+                burpTechnique: 'WAF bypass: Encoding variations, case manipulation, comment injection, IP rotation, request splitting, protocol-level attacks',
+                extensions: ['WAF Bypass', 'Encoding Converter', 'IP Rotator', 'Request Obfuscator'],
+                scannerConfig: 'Enable WAF detection, encoding bypass testing, obfuscation techniques',
+                manualTesting: 'Test: URL encoding, double encoding, Unicode normalization, HTTP parameter pollution, chunked encoding'
+            });
+        } else if (lowerIndicator.includes('captcha')) {
+            recommendations.lowPriority.push({
+                category: 'CAPTCHA Bypass',
+                risk: 'Automation Protection Bypass',
+                description: 'CAPTCHA protection detected - automation bypass possible',
+                burpTechnique: 'CAPTCHA bypass: OCR attacks, audio CAPTCHA exploitation, session reuse, API abuse, human solver services',
+                extensions: ['CAPTCHA Solver', 'OCR Integration', 'Session Reuse'],
+                manualTesting: 'Test: Session cookie reuse, API endpoint discovery, audio CAPTCHA weaknesses'
+            });
+        }
+    });
+}
+
+function addOutOfBandTechniques(recommendations, technologies) {
+    const securityIndicators = technologies.security || [];
+    
+    securityIndicators.forEach(indicator => {
+        const lowerIndicator = indicator.toLowerCase();
+        
+        if (lowerIndicator.includes('out-of-band') || lowerIndicator.includes('oob')) {
+            recommendations.highPriority.push({
+                category: 'Out-of-Band Attacks',
+                risk: 'Blind Vulnerability Exploitation',
+                description: 'Out-of-band attack vectors detected - blind exploitation possible',
+                burpTechnique: 'OOB attacks: DNS exfiltration, HTTP callbacks, email-based attacks, file inclusion callbacks, SSRF via OOB',
+                extensions: ['Collaborator Everywhere', 'Out-of-Band Scanner', 'DNS Exfiltration'],
+                scannerConfig: 'Configure Burp Collaborator, enable OOB detection, DNS interaction testing',
+                manualTesting: 'Test: DNS callbacks, HTTP interaction, email triggers, file inclusion with external URLs'
+            });
+        } else if (lowerIndicator.includes('email')) {
+            recommendations.mediumPriority.push({
+                category: 'Email-based OOB Attacks',
+                risk: 'Information Exfiltration via Email',
+                description: 'Email functionality detected - OOB data exfiltration possible',
+                burpTechnique: 'Email OOB: Template injection in emails, SMTP header injection, email-based XXE, information disclosure via email',
+                extensions: ['Email Security Scanner', 'Template Injection Tester'],
+                manualTesting: 'Test: Email template injection, CC/BCC manipulation, attachment-based attacks'
+            });
+        }
+    });
 }
 
 function generateCertBurpRecommendations(certificateInfo, url) {

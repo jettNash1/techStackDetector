@@ -20,7 +20,10 @@ document.addEventListener('DOMContentLoaded', initializePage);
 
 async function initializePage() {
     try {
-        tabId = await getCurrentTabId();
+        // Get current tab ID from URL
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        tabId = getCurrentTabId();
         
         if (!tabId) {
             throw new Error('No tab ID found');
@@ -43,49 +46,72 @@ async function initializePage() {
     }
 }
 
-async function getCurrentTabId() {
+function getCurrentTabId() {
+    // Get tab ID from chrome.tabs API or URL parameters
     try {
+        // For extension context, get from current tab
         const urlParams = new URLSearchParams(window.location.search);
-        const paramTabId = urlParams.get('tabId');
-        
-        if (paramTabId) {
-            return paramTabId;
-        }
-        
-        // Fallback to current active tab
-        return new Promise((resolve) => {
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                resolve(tabs && tabs[0] ? tabs[0].id : null);
-            });
-        });
+        return urlParams.get('tabId') || extractTabIdFromStorage();
     } catch (error) {
-        return null;
+        // Fallback to getting most recent analysis
+        return extractTabIdFromStorage();
     }
+}
+
+function extractTabIdFromStorage() {
+    // This will be called from loadResultsData with proper tab detection
+    return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs && tabs[0]) {
+                resolve(tabs[0].id);
+            } else {
+                resolve(null);
+            }
+        });
+    });
 }
 
 async function loadResultsData(tabId) {
     try {
+        // Resolve tabId if it's a Promise
+        if (tabId && typeof tabId.then === 'function') {
+            tabId = await tabId;
+        }
+        
         // Try direct tab ID first
         if (tabId) {
             const result = await chrome.storage.local.get(`results_${tabId}`);
             if (result[`results_${tabId}`]) {
+                console.log('Found data for tab ID:', tabId);
                 return result[`results_${tabId}`];
             }
         }
         
+        console.log('No direct tab data found, searching for most recent technology analysis...');
+        
         // Fallback: get all results and find the most recent technology analysis
         const allData = await chrome.storage.local.get(null);
         const resultsKeys = Object.keys(allData).filter(key => key.startsWith('results_'));
+        
+        console.log('Available storage keys:', resultsKeys);
         
         let mostRecent = null;
         let mostRecentTime = 0;
         
         for (const key of resultsKeys) {
             const data = allData[key];
-            if (data.feature === 'technology' && data.timestamp > mostRecentTime) {
+            console.log(`Checking ${key}:`, data);
+            if (data && data.feature === 'technology' && data.timestamp > mostRecentTime) {
                 mostRecent = data;
                 mostRecentTime = data.timestamp;
+                console.log('Found more recent technology data:', key);
             }
+        }
+        
+        if (mostRecent) {
+            console.log('Using most recent technology data:', mostRecent);
+        } else {
+            console.log('No technology analysis data found in storage');
         }
         
         return mostRecent;
@@ -98,6 +124,10 @@ async function loadResultsData(tabId) {
 
 function displayResults(data) {
     try {
+        // Store URL for retry functionality
+        sessionStorage.setItem('analysisUrl', data.originalUrl);
+        sessionStorage.setItem('analysisType', 'technology');
+        
         // Update header information
         analyzedUrlElement.textContent = data.originalUrl;
         
@@ -226,8 +256,14 @@ function setupEventListeners() {
         });
     });
     
+    // Retry analysis button
+    const retryBtn = document.querySelector('.retry-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', retryAnalysis);
+    }
+    
     // Keyboard support
-    document.querySelectorAll('.copy-section-btn, #copyAllBtn').forEach(btn => {
+    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn').forEach(btn => {
         btn.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -417,6 +453,57 @@ function showCopyNotification() {
     setTimeout(() => {
         copyNotification.classList.remove('show');
     }, 2000);
+}
+
+async function retryAnalysis() {
+    // Get stored URL for retry
+    const storedUrl = sessionStorage.getItem('analysisUrl');
+    const analysisType = sessionStorage.getItem('analysisType');
+    
+    if (!storedUrl) {
+        showError('No URL available for retry. Please go back to the extension and run a new analysis.');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        loadingContainer.style.display = 'flex';
+        resultsContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        
+        // Get current active tab
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            throw new Error('No active tab found');
+        }
+        
+        const currentTab = tabs[0];
+        
+        // Send message to background script to perform new analysis
+        const response = await chrome.runtime.sendMessage({
+            action: 'analyze',
+            feature: 'technology',
+            url: storedUrl,
+            tabId: currentTab.id
+        });
+        
+        if (response && response.success) {
+            // Analysis completed, reload the page to show new results
+            window.location.reload();
+        } else {
+            throw new Error(response?.error || 'Analysis failed');
+        }
+        
+    } catch (error) {
+        console.error('Retry analysis failed:', error);
+        showError(`Retry failed: ${error.message}`);
+        
+        // Show results container again on error
+        loadingContainer.style.display = 'none';
+        if (currentData) {
+            resultsContainer.style.display = 'block';
+        }
+    }
 }
 
 function showError(message) {

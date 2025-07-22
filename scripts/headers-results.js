@@ -73,6 +73,11 @@ function extractTabIdFromStorage() {
 
 async function loadResultsData(tabId) {
     try {
+        // Resolve tabId if it's a Promise
+        if (tabId && typeof tabId.then === 'function') {
+            tabId = await tabId;
+        }
+        
         // Try direct tab ID first
         if (tabId) {
             const result = await chrome.storage.local.get(`results_${tabId}`);
@@ -90,7 +95,7 @@ async function loadResultsData(tabId) {
         
         for (const key of resultsKeys) {
             const data = allData[key];
-            if (data.feature === 'headers' && data.timestamp > mostRecentTime) {
+            if (data && data.feature === 'headers' && data.timestamp > mostRecentTime) {
                 mostRecent = data;
                 mostRecentTime = data.timestamp;
             }
@@ -106,6 +111,10 @@ async function loadResultsData(tabId) {
 
 function displayResults(data) {
     try {
+        // Store URL for retry functionality
+        sessionStorage.setItem('analysisUrl', data.originalUrl);
+        sessionStorage.setItem('analysisType', 'headers');
+        
         // Update header information
         analyzedUrlElement.textContent = data.originalUrl;
         
@@ -577,8 +586,14 @@ function setupEventListeners() {
         });
     });
     
+    // Retry analysis button
+    const retryBtn = document.querySelector('.retry-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', retryAnalysis);
+    }
+    
     // Keyboard support
-    document.querySelectorAll('.copy-section-btn, #copyAllBtn').forEach(btn => {
+    document.querySelectorAll('.copy-section-btn, #copyAllBtn, .retry-btn').forEach(btn => {
         btn.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -946,6 +961,57 @@ function showCopyNotification() {
     setTimeout(() => {
         copyNotification.classList.remove('show');
     }, 2000);
+}
+
+async function retryAnalysis() {
+    // Get stored URL for retry
+    const storedUrl = sessionStorage.getItem('analysisUrl');
+    const analysisType = sessionStorage.getItem('analysisType');
+    
+    if (!storedUrl) {
+        showError('No URL available for retry. Please go back to the extension and run a new analysis.');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        loadingContainer.style.display = 'flex';
+        resultsContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        
+        // Get current active tab
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tabs || tabs.length === 0) {
+            throw new Error('No active tab found');
+        }
+        
+        const currentTab = tabs[0];
+        
+        // Send message to background script to perform new analysis
+        const response = await chrome.runtime.sendMessage({
+            action: 'analyze',
+            feature: 'headers',
+            url: storedUrl,
+            tabId: currentTab.id
+        });
+        
+        if (response && response.success) {
+            // Analysis completed, reload the page to show new results
+            window.location.reload();
+        } else {
+            throw new Error(response?.error || 'Analysis failed');
+        }
+        
+    } catch (error) {
+        console.error('Retry analysis failed:', error);
+        showError(`Retry failed: ${error.message}`);
+        
+        // Show results container again on error
+        loadingContainer.style.display = 'none';
+        if (currentData) {
+            resultsContainer.style.display = 'block';
+        }
+    }
 }
 
 function showError(message) {
