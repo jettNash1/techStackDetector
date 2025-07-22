@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Analyzer Results - PenTest Assistant</title>
+    <link rel="stylesheet" href="../styles/results.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <h1>🔐 Certificate Analyzer Results</h1>
+                <button id="copyAllBtn" class="copy-btn" tabindex="0" aria-label="Copy all results to clipboard">
+                    📋 Copy All Results
+                </button>
+            </div>
+            <div class="url-info">
+                <span class="label">Analyzed URL:</span>
+                <span id="analyzedUrl" class="url">Loading...</span>
+            </div>
+            <div class="timestamp">
+                <span id="analysisTime">Analysis Time: Loading...</span>
+            </div>
+        </header>
+
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Analyzing SSL/TLS certificate...</span>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <!-- Certificate Status -->
+            <section class="section">
+                <h2>🛡️ Certificate Status</h2>
+                <div class="cert-status" id="certStatus">
+                    <!-- Certificate status will be populated here -->
+                </div>
+            </section>
+
+            <!-- Basic Certificate Information -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📜 Certificate Information</h2>
+                    <button class="copy-section-btn" data-section="certificate" tabindex="0" aria-label="Copy certificate information to clipboard">
+                        Copy Certificate Info
+                    </button>
+                </div>
+                <div class="cert-info" id="certInfo">
+                    <!-- Certificate information will be populated here -->
+                </div>
+            </section>
+
+            <!-- HSTS Configuration -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔒 HSTS Configuration</h2>
+                    <button class="copy-section-btn" data-section="hsts" tabindex="0" aria-label="Copy HSTS configuration to clipboard">
+                        Copy HSTS Info
+                    </button>
+                </div>
+                <div class="hsts-info" id="hstsInfo">
+                    <!-- HSTS information will be populated here -->
+                </div>
+            </section>
+
+            <!-- Security Headers -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🛡️ Certificate-Related Security Headers</h2>
+                    <button class="copy-section-btn" data-section="security-headers" tabindex="0" aria-label="Copy security headers to clipboard">
+                        Copy Security Headers
+                    </button>
+                </div>
+                <div class="security-headers" id="securityHeaders">
+                    <!-- Security headers will be populated here -->
+                </div>
+            </section>
+
+            <!-- Certificate Chain -->
+            <section class="section" id="chainSection" style="display: none;">
+                <div class="section-header">
+                    <h2>🔗 Certificate Chain</h2>
+                    <button class="copy-section-btn" data-section="chain" tabindex="0" aria-label="Copy certificate chain to clipboard">
+                        Copy Chain
+                    </button>
+                </div>
+                <div class="cert-chain" id="certChain">
+                    <!-- Certificate chain will be populated here -->
+                </div>
+            </section>
+
+            <!-- Recommendations -->
+            <section class="section" id="recommendationsSection">
+                <h2>💡 Security Recommendations</h2>
+                <div class="recommendations" id="recommendations">
+                    <!-- Recommendations will be populated here -->
+                </div>
+            </section>
+
+            <!-- Analysis Notes -->
+            <section class="section" id="notesSection" style="display: none;">
+                <h2>📝 Analysis Notes</h2>
+                <div class="analysis-notes" id="analysisNotes">
+                    <!-- Notes will be populated here -->
+                </div>
+            </section>
+        </div>
+
+        <div class="error-container" id="errorContainer" style="display: none;">
+            <div class="error-message">
+                <h2>❌ Analysis Error</h2>
+                <p id="errorMessage">An error occurred during analysis.</p>
+                <div class="error-details" id="errorDetails"></div>
+                <button onclick="location.reload()" class="retry-btn">Retry Analysis</button>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="footer-content">
+                <span>PenTest Assistant v1.0.0</span>
+                <span id="exportTime"></span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="copyNotification" class="copy-notification">
+        ✅ Copied to clipboard!
+    </div>
+
+    <script src="../scripts/certificate-results.js"></script>
+</body>
+</html> 

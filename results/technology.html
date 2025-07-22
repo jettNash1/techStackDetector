@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology Stack Detector Results - PenTest Assistant</title>
+    <link rel="stylesheet" href="../styles/results.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <h1>🔍 Technology Stack Detector Results</h1>
+                <button id="copyAllBtn" class="copy-btn" tabindex="0" aria-label="Copy all results to clipboard">
+                    📋 Copy All Results
+                </button>
+            </div>
+            <div class="url-info">
+                <span class="label">Analyzed URL:</span>
+                <span id="analyzedUrl" class="url">Loading...</span>
+            </div>
+            <div class="timestamp">
+                <span id="analysisTime">Analysis Time: Loading...</span>
+            </div>
+        </header>
+
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Analyzing technology stack...</span>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <!-- Technology Summary -->
+            <section class="section">
+                <h2>📊 Technology Summary</h2>
+                <div class="tech-summary" id="techSummary">
+                    <!-- Summary will be populated here -->
+                </div>
+            </section>
+
+            <!-- Server Technologies -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🖥️ Server Technologies</h2>
+                    <button class="copy-section-btn" data-section="server" tabindex="0" aria-label="Copy server technologies to clipboard">
+                        Copy Server Tech
+                    </button>
+                </div>
+                <div class="tech-category" id="serverTech">
+                    <!-- Server technologies will be populated here -->
+                </div>
+            </section>
+
+            <!-- Frameworks -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>⚡ Frameworks</h2>
+                    <button class="copy-section-btn" data-section="framework" tabindex="0" aria-label="Copy frameworks to clipboard">
+                        Copy Frameworks
+                    </button>
+                </div>
+                <div class="tech-category" id="frameworkTech">
+                    <!-- Frameworks will be populated here -->
+                </div>
+            </section>
+
+            <!-- JavaScript Libraries -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📜 JavaScript Libraries</h2>
+                    <button class="copy-section-btn" data-section="javascript" tabindex="0" aria-label="Copy JavaScript libraries to clipboard">
+                        Copy JavaScript
+                    </button>
+                </div>
+                <div class="tech-category" id="javascriptTech">
+                    <!-- JavaScript libraries will be populated here -->
+                </div>
+            </section>
+
+            <!-- CSS Frameworks -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🎨 CSS Frameworks</h2>
+                    <button class="copy-section-btn" data-section="css" tabindex="0" aria-label="Copy CSS frameworks to clipboard">
+                        Copy CSS
+                    </button>
+                </div>
+                <div class="tech-category" id="cssTech">
+                    <!-- CSS frameworks will be populated here -->
+                </div>
+            </section>
+
+            <!-- CMS Platforms -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📝 Content Management Systems</h2>
+                    <button class="copy-section-btn" data-section="cms" tabindex="0" aria-label="Copy CMS platforms to clipboard">
+                        Copy CMS
+                    </button>
+                </div>
+                <div class="tech-category" id="cmsTech">
+                    <!-- CMS platforms will be populated here -->
+                </div>
+            </section>
+
+            <!-- Analytics & Tracking -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📈 Analytics & Tracking</h2>
+                    <button class="copy-section-btn" data-section="analytics" tabindex="0" aria-label="Copy analytics tools to clipboard">
+                        Copy Analytics
+                    </button>
+                </div>
+                <div class="tech-category" id="analyticsTech">
+                    <!-- Analytics tools will be populated here -->
+                </div>
+            </section>
+
+            <!-- Fonts -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔤 Fonts & Typography</h2>
+                    <button class="copy-section-btn" data-section="fonts" tabindex="0" aria-label="Copy fonts to clipboard">
+                        Copy Fonts
+                    </button>
+                </div>
+                <div class="tech-category" id="fontsTech">
+                    <!-- Fonts will be populated here -->
+                </div>
+            </section>
+
+            <!-- Security Tools -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🛡️ Security Tools</h2>
+                    <button class="copy-section-btn" data-section="security" tabindex="0" aria-label="Copy security tools to clipboard">
+                        Copy Security Tools
+                    </button>
+                </div>
+                <div class="tech-category" id="securityTech">
+                    <!-- Security tools will be populated here -->
+                </div>
+            </section>
+
+            <!-- Development Tools -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔧 Development Tools</h2>
+                    <button class="copy-section-btn" data-section="development" tabindex="0" aria-label="Copy development tools to clipboard">
+                        Copy Dev Tools
+                    </button>
+                </div>
+                <div class="tech-category" id="developmentTech">
+                    <!-- Development tools will be populated here -->
+                </div>
+            </section>
+
+            <!-- CDN Services -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🌐 CDN Services</h2>
+                    <button class="copy-section-btn" data-section="cdn" tabindex="0" aria-label="Copy CDN services to clipboard">
+                        Copy CDN Services
+                    </button>
+                </div>
+                <div class="tech-category" id="cdnTech">
+                    <!-- CDN services will be populated here -->
+                </div>
+            </section>
+
+            <!-- Other Technologies -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔧 Other Technologies</h2>
+                    <button class="copy-section-btn" data-section="other" tabindex="0" aria-label="Copy other technologies to clipboard">
+                        Copy Other
+                    </button>
+                </div>
+                <div class="tech-category" id="otherTech">
+                    <!-- Other technologies will be populated here -->
+                </div>
+            </section>
+
+            <!-- Analysis Notes -->
+            <section class="section" id="notesSection" style="display: none;">
+                <h2>📝 Analysis Notes</h2>
+                <div class="analysis-notes" id="analysisNotes">
+                    <!-- Notes will be populated here -->
+                </div>
+            </section>
+        </div>
+
+        <div class="error-container" id="errorContainer" style="display: none;">
+            <div class="error-message">
+                <h2>❌ Analysis Error</h2>
+                <p id="errorMessage">An error occurred during analysis.</p>
+                <button onclick="location.reload()" class="retry-btn">Retry Analysis</button>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="footer-content">
+                <span>PenTest Assistant v1.0.0</span>
+                <span id="exportTime"></span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="copyNotification" class="copy-notification">
+        ✅ Copied to clipboard!
+    </div>
+
+    <script src="../scripts/technology-results.js"></script>
+</body>
+</html> 

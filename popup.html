@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PenTest Assistant</title>
+    <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛡️ PenTest Assistant</h1>
+            <p class="subtitle">Information Gathering Tools</p>
+        </header>
+        
+        <div class="current-url">
+            <span class="url-label">Current URL:</span>
+            <span id="currentUrl" class="url-text">Loading...</span>
+        </div>
+        
+        <div class="button-container">
+            <button id="headerInspector" class="feature-btn" data-feature="headers" tabindex="0" aria-label="Inspect HTTP headers and security information">
+                <div class="btn-icon">📋</div>
+                <div class="btn-content">
+                    <h3>Header Inspector</h3>
+                    <p>Collect HTTP headers & security info</p>
+                </div>
+            </button>
+            
+            <button id="techDetector" class="feature-btn" data-feature="technology" tabindex="0" aria-label="Detect web technologies and frameworks">
+                <div class="btn-icon">🔍</div>
+                <div class="btn-content">
+                    <h3>Technology Stack Detector</h3>
+                    <p>Identify frameworks & technologies</p>
+                </div>
+            </button>
+            
+            <button id="certAnalyzer" class="feature-btn" data-feature="certificate" tabindex="0" aria-label="Analyze SSL/TLS certificates">
+                <div class="btn-icon">🔐</div>
+                <div class="btn-content">
+                    <h3>Certificate Analyzer</h3>
+                    <p>Extract SSL/TLS certificate details</p>
+                </div>
+            </button>
+        </div>
+        
+        <div class="status-container">
+            <div id="statusMessage" class="status-message"></div>
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <div class="spinner"></div>
+                <span>Analyzing...</span>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <div class="version">v1.0.0</div>
+        </footer>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 

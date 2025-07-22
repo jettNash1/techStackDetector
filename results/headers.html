@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header Inspector Results - PenTest Assistant</title>
+    <link rel="stylesheet" href="../styles/results.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <h1>📋 Header Inspector Results</h1>
+                <button id="copyAllBtn" class="copy-btn" tabindex="0" aria-label="Copy all results to clipboard">
+                    📋 Copy All Results
+                </button>
+            </div>
+            <div class="url-info">
+                <span class="label">Analyzed URL:</span>
+                <span id="analyzedUrl" class="url">Loading...</span>
+            </div>
+            <div class="timestamp">
+                <span id="analysisTime">Analysis Time: Loading...</span>
+            </div>
+        </header>
+
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>Loading analysis results...</span>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <!-- Security Score Section -->
+            <section class="section">
+                <h2>🛡️ Security Analysis</h2>
+                <div class="security-score" id="securityScore">
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <span id="scoreValue">0</span>
+                            <span class="score-label">/ 100</span>
+                        </div>
+                        <div class="score-text">Security Score</div>
+                    </div>
+                </div>
+                
+                <div class="security-headers" id="securityHeaders">
+                    <!-- Security headers will be populated here -->
+                </div>
+                
+                <div class="recommendations" id="recommendations">
+                    <!-- Recommendations will be populated here -->
+                </div>
+            </section>
+
+            <!-- All Headers Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📄 All HTTP Headers</h2>
+                    <button class="copy-section-btn" data-section="headers" tabindex="0" aria-label="Copy headers to clipboard">
+                        Copy Headers
+                    </button>
+                </div>
+                <div class="headers-container" id="allHeaders">
+                    <!-- Headers will be populated here -->
+                </div>
+            </section>
+
+            <!-- Server Information Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🖥️ Server Information</h2>
+                    <button class="copy-section-btn" data-section="server" tabindex="0" aria-label="Copy server info to clipboard">
+                        Copy Server Info
+                    </button>
+                </div>
+                <div class="server-info" id="serverInfo">
+                    <!-- Server info will be populated here -->
+                </div>
+            </section>
+
+            <!-- Response Information Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📊 Response Information</h2>
+                    <button class="copy-section-btn" data-section="response" tabindex="0" aria-label="Copy response info to clipboard">
+                        Copy Response Info
+                    </button>
+                </div>
+                <div class="response-info" id="responseInfo">
+                    <!-- Response info will be populated here -->
+                </div>
+            </section>
+
+            <!-- Cookie Analysis Section -->
+            <section class="section" id="cookieSection">
+                <div class="section-header">
+                    <h2>🍪 Cookie Analysis</h2>
+                    <button class="copy-section-btn" data-section="cookies" tabindex="0" aria-label="Copy cookie analysis to clipboard">
+                        Copy Cookie Analysis
+                    </button>
+                </div>
+                <div class="cookie-analysis" id="cookieAnalysis">
+                    <!-- Cookie analysis will be populated here -->
+                </div>
+            </section>
+
+            <!-- Information Disclosure Section -->
+            <section class="section" id="infoDisclosureSection">
+                <div class="section-header">
+                    <h2>⚠️ Information Disclosure</h2>
+                    <button class="copy-section-btn" data-section="disclosure" tabindex="0" aria-label="Copy information disclosure to clipboard">
+                        Copy Disclosure Info
+                    </button>
+                </div>
+                <div class="info-disclosure" id="infoDisclosure">
+                    <!-- Information disclosure will be populated here -->
+                </div>
+            </section>
+
+            <!-- Caching Headers Section -->
+            <section class="section" id="cachingSection">
+                <div class="section-header">
+                    <h2>🗄️ Caching Configuration</h2>
+                    <button class="copy-section-btn" data-section="caching" tabindex="0" aria-label="Copy caching headers to clipboard">
+                        Copy Caching Info
+                    </button>
+                </div>
+                <div class="caching-headers" id="cachingHeaders">
+                    <!-- Caching headers will be populated here -->
+                </div>
+            </section>
+        </div>
+
+        <div class="error-container" id="errorContainer" style="display: none;">
+            <div class="error-message">
+                <h2>❌ Analysis Error</h2>
+                <p id="errorMessage">An error occurred during analysis.</p>
+                <button onclick="location.reload()" class="retry-btn">Retry Analysis</button>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <div class="footer-content">
+                <span>PenTest Assistant v1.0.0</span>
+                <span id="exportTime"></span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="copyNotification" class="copy-notification">
+        ✅ Copied to clipboard!
+    </div>
+
+    <script src="../scripts/headers-results.js"></script>
+</body>
+</html> 
